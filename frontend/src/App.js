@@ -231,7 +231,7 @@ const EmployeeManagement = () => {
     try {
       await axios.delete(`${API}/employees/${id}`);
       toast.success('Empleado eliminado exitosamente');
-      fetchEmployees();
+      await fetchEmployees();
     } catch (error) {
       console.error('Error deleting employee:', error);
       toast.error('Error al eliminar empleado');
