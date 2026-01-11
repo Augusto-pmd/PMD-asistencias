@@ -1,38 +1,1025 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Users, Calendar, DollarSign, History, LayoutDashboard, Plus, Edit2, Trash2, Check, X, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+function getWeekDates(weekStart) {
+  const dates = [];
+  const start = new Date(weekStart);
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(start);
+    date.setDate(start.getDate() + i);
+    dates.push(date.toISOString().split('T')[0]);
+  }
+  return dates;
+}
+
+function getCurrentWeekStart() {
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(today.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
+}
+
+const Dashboard = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      const response = await axios.get(`${API}/dashboard/stats`);
+      setStats(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      toast.error('Error al cargar estadísticas');
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-slate-500">Cargando...</div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
+    <div className="space-y-6" data-testid="dashboard">
+      <div>
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Dashboard</h1>
+        <p className="text-slate-500">Resumen de la semana actual</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-employees">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500 mb-1">Empleados Activos</p>
+              <p className="text-3xl font-bold text-slate-900">{stats?.active_employees || 0}</p>
+              <p className="text-xs text-slate-400 mt-1">de {stats?.total_employees || 0} totales</p>
+            </div>
+            <div className="p-3 bg-indigo-50 rounded-lg">
+              <Users className="w-6 h-6 text-indigo-600" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-total-payment">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500 mb-1">Total a Pagar</p>
+              <p className="text-3xl font-bold text-slate-900 font-mono-numbers">
+                {formatCurrency(stats?.total_payment_this_week || 0)}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">esta semana</p>
+            </div>
+            <div className="p-3 bg-emerald-50 rounded-lg">
+              <DollarSign className="w-6 h-6 text-emerald-600" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-advances">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500 mb-1">Adelantos</p>
+              <p className="text-3xl font-bold text-slate-900 font-mono-numbers">
+                {formatCurrency(stats?.total_advances_this_week || 0)}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">descontados</p>
+            </div>
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <Calendar className="w-6 h-6 text-purple-600" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-net-payment">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500 mb-1">Pago Neto</p>
+              <p className="text-3xl font-bold text-emerald-600 font-mono-numbers">
+                {formatCurrency(stats?.net_payment_this_week || 0)}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">después de adelantos</p>
+            </div>
+            <div className="p-3 bg-emerald-50 rounded-lg">
+              <DollarSign className="w-6 h-6 text-emerald-600" />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link to="/employees">
+            <Button className="w-full btn-primary" data-testid="quick-action-employees">
+              <Users className="w-4 h-4 mr-2" />
+              Gestionar Empleados
+            </Button>
+          </Link>
+          <Link to="/attendance">
+            <Button className="w-full btn-primary" data-testid="quick-action-attendance">
+              <Calendar className="w-4 h-4 mr-2" />
+              Registrar Asistencia
+            </Button>
+          </Link>
+          <Link to="/advances">
+            <Button className="w-full btn-primary" data-testid="quick-action-advances">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Gestionar Adelantos
+            </Button>
+          </Link>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const EmployeeManagement = () => {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [formData, setFormData] = useState({ name: '', daily_salary: '' });
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(`${API}/employees`);
+      setEmployees(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast.error('Error al cargar empleados');
+      setLoading(false);
+    }
+  };
+
+  const handleAddEmployee = async () => {
+    if (!formData.name || !formData.daily_salary) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+    try {
+      await axios.post(`${API}/employees`, {
+        name: formData.name,
+        daily_salary: parseFloat(formData.daily_salary)
+      });
+      toast.success('Empleado agregado exitosamente');
+      setIsAddModalOpen(false);
+      setFormData({ name: '', daily_salary: '' });
+      fetchEmployees();
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      toast.error('Error al agregar empleado');
+    }
+  };
+
+  const handleEditEmployee = async () => {
+    if (!formData.name || !formData.daily_salary) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+    try {
+      await axios.put(`${API}/employees/${selectedEmployee.id}`, {
+        name: formData.name,
+        daily_salary: parseFloat(formData.daily_salary)
+      });
+      toast.success('Empleado actualizado exitosamente');
+      setIsEditModalOpen(false);
+      setSelectedEmployee(null);
+      setFormData({ name: '', daily_salary: '' });
+      fetchEmployees();
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      toast.error('Error al actualizar empleado');
+    }
+  };
+
+  const handleDeleteEmployee = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este empleado?')) return;
+    try {
+      await axios.delete(`${API}/employees/${id}`);
+      toast.success('Empleado eliminado exitosamente');
+      fetchEmployees();
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      toast.error('Error al eliminar empleado');
+    }
+  };
+
+  const openEditModal = (employee) => {
+    setSelectedEmployee(employee);
+    setFormData({ name: employee.name, daily_salary: employee.daily_salary });
+    setIsEditModalOpen(true);
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  return (
+    <div className="space-y-6" data-testid="employee-management">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Empleados</h1>
+          <p className="text-slate-500">Gestiona tu equipo de trabajo</p>
+        </div>
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="btn-primary" data-testid="add-employee-btn">
+              <Plus className="w-4 h-4 mr-2" />
+              Agregar Empleado
+            </Button>
+          </DialogTrigger>
+          <DialogContent data-testid="add-employee-dialog">
+            <DialogHeader>
+              <DialogTitle>Agregar Nuevo Empleado</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="name">Nombre Completo</Label>
+                <Input
+                  id="name"
+                  data-testid="employee-name-input"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Juan Pérez"
+                />
+              </div>
+              <div>
+                <Label htmlFor="salary">Salario Diario</Label>
+                <Input
+                  id="salary"
+                  data-testid="employee-salary-input"
+                  type="number"
+                  value={formData.daily_salary}
+                  onChange={(e) => setFormData({ ...formData, daily_salary: e.target.value })}
+                  placeholder="5000"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAddEmployee} data-testid="submit-employee-btn">Agregar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Salario Diario</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center py-12 text-slate-400">
+                    No hay empleados registrados
+                  </td>
+                </tr>
+              ) : (
+                employees.map((employee) => (
+                  <tr key={employee.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`employee-row-${employee.id}`}>
+                    <td className="py-4 px-6 text-sm text-slate-700">{employee.name}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 font-mono-numbers">
+                      {formatCurrency(employee.daily_salary)}
+                    </td>
+                    <td className="py-4 px-6">
+                      <Badge variant={employee.is_active ? "success" : "secondary"} data-testid={`employee-status-${employee.id}`}>
+                        {employee.is_active ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => openEditModal(employee)} data-testid={`edit-employee-${employee.id}`}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteEmployee(employee.id)} data-testid={`delete-employee-${employee.id}`}>
+                          <Trash2 className="w-4 h-4 text-rose-500" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent data-testid="edit-employee-dialog">
+          <DialogHeader>
+            <DialogTitle>Editar Empleado</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="edit-name">Nombre Completo</Label>
+              <Input
+                id="edit-name"
+                data-testid="edit-employee-name-input"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-salary">Salario Diario</Label>
+              <Input
+                id="edit-salary"
+                data-testid="edit-employee-salary-input"
+                type="number"
+                value={formData.daily_salary}
+                onChange={(e) => setFormData({ ...formData, daily_salary: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleEditEmployee} data-testid="update-employee-btn">Actualizar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const AttendanceSheet = () => {
+  const [employees, setEmployees] = useState([]);
+  const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
+  const [attendance, setAttendance] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    if (employees.length > 0) {
+      fetchAttendance();
+    }
+  }, [weekStart, employees]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(`${API}/employees`);
+      setEmployees(response.data.filter(e => e.is_active));
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast.error('Error al cargar empleados');
+      setLoading(false);
+    }
+  };
+
+  const fetchAttendance = async () => {
+    try {
+      const response = await axios.get(`${API}/attendance/week/${weekStart}`);
+      const attendanceMap = {};
+      response.data.forEach(record => {
+        const key = `${record.employee_id}-${record.date}`;
+        attendanceMap[key] = record.status;
+      });
+      setAttendance(attendanceMap);
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+      toast.error('Error al cargar asistencia');
+    }
+  };
+
+  const handleAttendanceClick = async (employeeId, date, currentStatus) => {
+    const statuses = ['present', 'absent', 'late'];
+    const currentIndex = statuses.indexOf(currentStatus);
+    const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+
+    try {
+      await axios.post(`${API}/attendance`, {
+        employee_id: employeeId,
+        date: date,
+        status: nextStatus,
+        week_start_date: weekStart
+      });
+      
+      const key = `${employeeId}-${date}`;
+      setAttendance({ ...attendance, [key]: nextStatus });
+      toast.success('Asistencia actualizada');
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      toast.error('Error al actualizar asistencia');
+    }
+  };
+
+  const weekDates = getWeekDates(weekStart);
+  const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  return (
+    <div className="space-y-6" data-testid="attendance-sheet">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Asistencia</h1>
+          <p className="text-slate-500">Registra la asistencia semanal</p>
+        </div>
+        <Input
+          type="date"
+          data-testid="week-start-input"
+          value={weekStart}
+          onChange={(e) => setWeekStart(e.target.value)}
+          className="w-48"
+        />
+      </div>
+
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-50">Empleado</th>
+                {weekDates.map((date, idx) => (
+                  <th key={date} className="text-center py-4 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <div>{dayNames[idx]}</div>
+                    <div className="text-slate-400 font-normal">{new Date(date).getDate()}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {employees.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="text-center py-12 text-slate-400">
+                    No hay empleados activos
+                  </td>
+                </tr>
+              ) : (
+                employees.map((employee) => (
+                  <tr key={employee.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`attendance-row-${employee.id}`}>
+                    <td className="py-3 px-6 text-sm text-slate-700 font-medium sticky left-0 bg-white">{employee.name}</td>
+                    {weekDates.map((date) => {
+                      const key = `${employee.id}-${date}`;
+                      const status = attendance[key] || '';
+                      return (
+                        <td key={date} className="py-1 px-1">
+                          <div
+                            className={`attendance-cell ${status ? `selected-${status}` : ''}`}
+                            onClick={() => handleAttendanceClick(employee.id, date, status)}
+                            data-testid={`attendance-cell-${employee.id}-${date}`}
+                          >
+                            {status === 'present' && <Check className="w-5 h-5 mx-auto" />}
+                            {status === 'absent' && <X className="w-5 h-5 mx-auto" />}
+                            {status === 'late' && <Clock className="w-5 h-5 mx-auto" />}
+                            {!status && <span className="text-slate-300">-</span>}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+        <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 flex items-center justify-center bg-emerald-100 rounded">
+              <Check className="w-5 h-5 text-emerald-700" />
+            </div>
+            <span className="text-slate-700">Presente</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 flex items-center justify-center bg-rose-100 rounded">
+              <X className="w-5 h-5 text-rose-700" />
+            </div>
+            <span className="text-slate-700">Ausente</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 flex items-center justify-center bg-amber-100 rounded">
+              <Clock className="w-5 h-5 text-amber-700" />
+            </div>
+            <span className="text-slate-700">Tarde</span>
+          </div>
+          <span className="text-slate-600 ml-auto">Haz clic en las celdas para cambiar el estado</span>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const AdvanceManagement = () => {
+  const [employees, setEmployees] = useState([]);
+  const [advances, setAdvances] = useState([]);
+  const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ employee_id: '', amount: '', date: '', description: '' });
+
+  useEffect(() => {
+    fetchEmployees();
+    fetchAdvances();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(`${API}/employees`);
+      setEmployees(response.data.filter(e => e.is_active));
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast.error('Error al cargar empleados');
+      setLoading(false);
+    }
+  };
+
+  const fetchAdvances = async () => {
+    try {
+      const response = await axios.get(`${API}/advances`);
+      setAdvances(response.data);
+    } catch (error) {
+      console.error('Error fetching advances:', error);
+      toast.error('Error al cargar adelantos');
+    }
+  };
+
+  const handleAddAdvance = async () => {
+    if (!formData.employee_id || !formData.amount || !formData.date) {
+      toast.error('Por favor completa los campos obligatorios');
+      return;
+    }
+    try {
+      await axios.post(`${API}/advances`, {
+        employee_id: formData.employee_id,
+        amount: parseFloat(formData.amount),
+        date: formData.date,
+        description: formData.description,
+        week_start_date: weekStart
+      });
+      toast.success('Adelanto registrado exitosamente');
+      setIsAddModalOpen(false);
+      setFormData({ employee_id: '', amount: '', date: '', description: '' });
+      fetchAdvances();
+    } catch (error) {
+      console.error('Error adding advance:', error);
+      toast.error('Error al registrar adelanto');
+    }
+  };
+
+  const handleDeleteAdvance = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este adelanto?')) return;
+    try {
+      await axios.delete(`${API}/advances/${id}`);
+      toast.success('Adelanto eliminado exitosamente');
+      fetchAdvances();
+    } catch (error) {
+      console.error('Error deleting advance:', error);
+      toast.error('Error al eliminar adelanto');
+    }
+  };
+
+  const getEmployeeName = (employeeId) => {
+    const employee = employees.find(e => e.id === employeeId);
+    return employee ? employee.name : 'Desconocido';
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  return (
+    <div className="space-y-6" data-testid="advance-management">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Adelantos</h1>
+          <p className="text-slate-500">Gestiona los adelantos de pago</p>
+        </div>
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="btn-primary" data-testid="add-advance-btn">
+              <Plus className="w-4 h-4 mr-2" />
+              Registrar Adelanto
+            </Button>
+          </DialogTrigger>
+          <DialogContent data-testid="add-advance-dialog">
+            <DialogHeader>
+              <DialogTitle>Registrar Nuevo Adelanto</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="employee">Empleado</Label>
+                <Select value={formData.employee_id} onValueChange={(value) => setFormData({ ...formData, employee_id: value })}>
+                  <SelectTrigger data-testid="advance-employee-select">
+                    <SelectValue placeholder="Selecciona un empleado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees.map(emp => (
+                      <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="amount">Monto</Label>
+                <Input
+                  id="amount"
+                  data-testid="advance-amount-input"
+                  type="number"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  placeholder="1000"
+                />
+              </div>
+              <div>
+                <Label htmlFor="date">Fecha</Label>
+                <Input
+                  id="date"
+                  data-testid="advance-date-input"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Descripción (opcional)</Label>
+                <Input
+                  id="description"
+                  data-testid="advance-description-input"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Motivo del adelanto"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAddAdvance} data-testid="submit-advance-btn">Registrar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Empleado</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Monto</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Descripción</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {advances.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-slate-400">
+                    No hay adelantos registrados
+                  </td>
+                </tr>
+              ) : (
+                advances.map((advance) => (
+                  <tr key={advance.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`advance-row-${advance.id}`}>
+                    <td className="py-4 px-6 text-sm text-slate-700">{getEmployeeName(advance.employee_id)}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 font-mono-numbers">
+                      {formatCurrency(advance.amount)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-slate-700">{new Date(advance.date).toLocaleDateString('es-AR')}</td>
+                    <td className="py-4 px-6 text-sm text-slate-500">{advance.description || '-'}</td>
+                    <td className="py-4 px-6 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteAdvance(advance.id)} data-testid={`delete-advance-${advance.id}`}>
+                        <Trash2 className="w-4 h-4 text-rose-500" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const PaymentSummary = () => {
+  const [employees, setEmployees] = useState([]);
+  const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
+  const [attendance, setAttendance] = useState([]);
+  const [advances, setAdvances] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [paymentData, setPaymentData] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, [weekStart]);
+
+  const fetchData = async () => {
+    try {
+      const [empRes, attRes, advRes] = await Promise.all([
+        axios.get(`${API}/employees`),
+        axios.get(`${API}/attendance/week/${weekStart}`),
+        axios.get(`${API}/advances`)
+      ]);
+      
+      setEmployees(empRes.data.filter(e => e.is_active));
+      setAttendance(attRes.data);
+      setAdvances(advRes.data);
+      calculatePayments(empRes.data.filter(e => e.is_active), attRes.data, advRes.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Error al cargar datos');
+      setLoading(false);
+    }
+  };
+
+  const calculatePayments = (emps, att, adv) => {
+    const payments = emps.map(employee => {
+      const employeeAttendance = att.filter(a => a.employee_id === employee.id);
+      const daysWorked = employeeAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
+      
+      const employeeAdvances = adv.filter(a => a.employee_id === employee.id && a.week_start_date === weekStart);
+      const totalAdvances = employeeAdvances.reduce((sum, a) => sum + a.amount, 0);
+      
+      const totalSalary = daysWorked * employee.daily_salary;
+      const netPayment = totalSalary - totalAdvances;
+      
+      return {
+        employee,
+        daysWorked,
+        totalSalary,
+        totalAdvances,
+        netPayment
+      };
+    });
+    
+    setPaymentData(payments);
+  };
+
+  const handleCalculatePayments = async () => {
+    try {
+      await axios.post(`${API}/payments/calculate`, { week_start_date: weekStart });
+      toast.success('Pagos calculados y guardados en historial');
+    } catch (error) {
+      console.error('Error calculating payments:', error);
+      toast.error('Error al calcular pagos');
+    }
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  const totalToPay = paymentData.reduce((sum, p) => sum + p.netPayment, 0);
+
+  return (
+    <div className="space-y-6" data-testid="payment-summary">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Resumen de Pagos</h1>
+          <p className="text-slate-500">Calcula los pagos de la semana</p>
+        </div>
+        <div className="flex gap-4 items-center">
+          <Input
+            type="date"
+            data-testid="payment-week-start-input"
+            value={weekStart}
+            onChange={(e) => setWeekStart(e.target.value)}
+            className="w-48"
+          />
+          <Button className="btn-primary" onClick={handleCalculatePayments} data-testid="calculate-payments-btn">
+            <DollarSign className="w-4 h-4 mr-2" />
+            Guardar en Historial
+          </Button>
+        </div>
+      </div>
+
+      <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl shadow-sm">
+        <div className="text-center">
+          <p className="text-sm font-medium text-slate-600 mb-2">Total a Pagar Esta Semana</p>
+          <p className="text-5xl font-bold text-slate-900 font-mono-numbers">{formatCurrency(totalToPay)}</p>
+        </div>
+      </Card>
+
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Empleado</th>
+                <th className="text-center py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Días Trabajados</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Salario Diario</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Salario</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Adelantos</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Neto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paymentData.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-12 text-slate-400">
+                    No hay datos para mostrar
+                  </td>
+                </tr>
+              ) : (
+                paymentData.map((payment) => (
+                  <tr key={payment.employee.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`payment-row-${payment.employee.id}`}>
+                    <td className="py-4 px-6 text-sm text-slate-700 font-medium">{payment.employee.name}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 text-center">{payment.daysWorked}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
+                      {formatCurrency(payment.employee.daily_salary)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
+                      {formatCurrency(payment.totalSalary)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-rose-600 text-right font-mono-numbers">
+                      -{formatCurrency(payment.totalAdvances)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-emerald-600 text-right font-bold font-mono-numbers">
+                      {formatCurrency(payment.netPayment)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const PaymentHistoryPage = () => {
+  const [payments, setPayments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [payRes, empRes] = await Promise.all([
+        axios.get(`${API}/payments/history`),
+        axios.get(`${API}/employees`)
+      ]);
+      setPayments(payRes.data);
+      setEmployees(empRes.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Error al cargar historial');
+      setLoading(false);
+    }
+  };
+
+  const getEmployeeName = (employeeId) => {
+    const employee = employees.find(e => e.id === employeeId);
+    return employee ? employee.name : 'Desconocido';
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  return (
+    <div className="space-y-6" data-testid="payment-history">
+      <div>
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Historial de Pagos</h1>
+        <p className="text-slate-500">Consulta los pagos anteriores</p>
+      </div>
+
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Empleado</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Semana</th>
+                <th className="text-center py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Días</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Salario Total</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Adelantos</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Neto</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha de Pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-12 text-slate-400">
+                    No hay pagos registrados en el historial
+                  </td>
+                </tr>
+              ) : (
+                payments.map((payment) => (
+                  <tr key={payment.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`history-row-${payment.id}`}>
+                    <td className="py-4 px-6 text-sm text-slate-700">{getEmployeeName(payment.employee_id)}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700">{payment.week_start_date}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 text-center">{payment.days_worked}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
+                      {formatCurrency(payment.total_salary)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-rose-600 text-right font-mono-numbers">
+                      -{formatCurrency(payment.total_advances)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-emerald-600 text-right font-bold font-mono-numbers">
+                      {formatCurrency(payment.net_payment)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-slate-500">
+                      {new Date(payment.paid_at).toLocaleDateString('es-AR')}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const Sidebar = () => {
+  const location = useLocation();
+
+  const menuItems = [
+    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/employees', icon: Users, label: 'Empleados' },
+    { path: '/attendance', icon: Calendar, label: 'Asistencia' },
+    { path: '/advances', icon: DollarSign, label: 'Adelantos' },
+    { path: '/payments', icon: DollarSign, label: 'Resumen de Pagos' },
+    { path: '/history', icon: History, label: 'Historial' }
+  ];
+
+  return (
+    <div className="w-64 bg-white border-r border-slate-200 min-h-screen" data-testid="sidebar">
+      <div className="p-6">
+        <h2 className="text-2xl font-bold text-slate-900">PayrollPro</h2>
+        <p className="text-sm text-slate-500 mt-1">Gestión de Pagos</p>
+      </div>
+      <nav className="px-3">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex items-center gap-3 px-3 py-3 mb-1 rounded-lg transition-all ${
+                isActive
+                  ? 'bg-indigo-50 text-indigo-600 font-medium'
+                  : 'text-slate-600 hover:bg-slate-50'
+              }`}
+              data-testid={`nav-${item.path}`}
+            >
+              <Icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 };
@@ -41,11 +1028,20 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <Toaster position="top-right" richColors />
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 p-8 lg:p-12 bg-slate-50 min-h-screen">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/employees" element={<EmployeeManagement />} />
+              <Route path="/attendance" element={<AttendanceSheet />} />
+              <Route path="/advances" element={<AdvanceManagement />} />
+              <Route path="/payments" element={<PaymentSummary />} />
+              <Route path="/history" element={<PaymentHistoryPage />} />
+            </Routes>
+          </div>
+        </div>
       </BrowserRouter>
     </div>
   );
