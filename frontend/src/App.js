@@ -610,7 +610,7 @@ const AdvanceManagement = () => {
     try {
       await axios.delete(`${API}/advances/${id}`);
       toast.success('Adelanto eliminado exitosamente');
-      fetchAdvances();
+      await fetchAdvances();
     } catch (error) {
       console.error('Error deleting advance:', error);
       toast.error('Error al eliminar adelanto');
