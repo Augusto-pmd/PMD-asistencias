@@ -227,6 +227,59 @@ async def delete_employee(employee_id: str):
     return {"message": "Employee deleted successfully"}
 
 
+@api_router.post("/projects", response_model=Project)
+async def create_project(project: ProjectCreate):
+    from uuid import uuid4
+    project_dict = project.model_dump()
+    project_obj = Project(
+        id=str(uuid4()),
+        name=project_dict['name'],
+        description=project_dict.get('description', ''),
+        start_date=project_dict['start_date'],
+        is_active=True,
+        created_at=datetime.now(timezone.utc).isoformat()
+    )
+    doc = project_obj.model_dump()
+    await db.projects.insert_one(doc)
+    return project_obj
+
+
+@api_router.get("/projects", response_model=List[Project])
+async def get_projects():
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    return projects
+
+
+@api_router.get("/projects/{project_id}", response_model=Project)
+async def get_project(project_id: str):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+
+@api_router.put("/projects/{project_id}", response_model=Project)
+async def update_project(project_id: str, update_data: ProjectUpdate):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    if update_dict:
+        await db.projects.update_one({"id": project_id}, {"$set": update_dict})
+    
+    updated_project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    return updated_project
+
+
+@api_router.delete("/projects/{project_id}")
+async def delete_project(project_id: str):
+    result = await db.projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project deleted successfully"}
+
+
 @api_router.post("/contractors", response_model=Contractor)
 async def create_contractor(contractor: ContractorCreate):
     from uuid import uuid4
