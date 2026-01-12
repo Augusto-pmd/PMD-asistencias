@@ -403,6 +403,8 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
           lateDiscount={receipt.lateDiscount}
           advances={receipt.advances}
           netPayment={receipt.netPayment}
+          isContractor={receipt.isContractor}
+          project={receipt.project}
         />
       ))}
     </div>
