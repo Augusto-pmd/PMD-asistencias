@@ -1351,10 +1351,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-slate-200 min-h-screen" data-testid="sidebar">
+    <div className="w-64 bg-white border-r border-blue-200 min-h-screen" data-testid="sidebar">
       <div className="p-6">
-        <h2 className="text-2xl font-bold text-slate-900">PayrollPro</h2>
-        <p className="text-sm text-slate-500 mt-1">Gestión de Pagos</p>
+        <h2 className="text-2xl font-bold text-blue-900">PMD PAGOS</h2>
+        <p className="text-sm text-blue-600 mt-1">Gestión de Pagos</p>
       </div>
       <nav className="px-3">
         {menuItems.map((item) => {
