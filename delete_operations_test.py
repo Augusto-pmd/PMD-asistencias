@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import json
 
 class DeleteOperationsTest:
-    def __init__(self, base_url="https://payroll-manager-60.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://site-salary.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
