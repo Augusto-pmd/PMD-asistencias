@@ -284,14 +284,20 @@ async def create_attendance(attendance: AttendanceCreate):
     })
     
     if existing:
+        update_data = {
+            "status": attendance_dict['status'],
+            "late_hours": attendance_dict.get('late_hours', 0.0)
+        }
         await db.attendance.update_one(
             {"employee_id": attendance_dict['employee_id'], "date": attendance_dict['date']},
-            {"$set": {"status": attendance_dict['status']}}
+            {"$set": update_data}
         )
         updated = await db.attendance.find_one(
             {"employee_id": attendance_dict['employee_id'], "date": attendance_dict['date']},
             {"_id": 0}
         )
+        if 'late_hours' not in updated:
+            updated['late_hours'] = 0.0
         return updated
     
     attendance_obj = Attendance(
@@ -299,6 +305,7 @@ async def create_attendance(attendance: AttendanceCreate):
         employee_id=attendance_dict['employee_id'],
         date=attendance_dict['date'],
         status=attendance_dict['status'],
+        late_hours=attendance_dict.get('late_hours', 0.0),
         week_start_date=attendance_dict['week_start_date']
     )
     doc = attendance_obj.model_dump()
