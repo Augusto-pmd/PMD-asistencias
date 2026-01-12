@@ -27,6 +27,8 @@ class Employee(BaseModel):
     id: str
     name: str
     daily_salary: float
+    project_id: Optional[str] = None
+    trade: Optional[str] = None
     created_at: str
     is_active: bool = True
 
@@ -34,11 +36,15 @@ class Employee(BaseModel):
 class EmployeeCreate(BaseModel):
     name: str
     daily_salary: float
+    project_id: Optional[str] = None
+    trade: Optional[str] = None
 
 
 class EmployeeUpdate(BaseModel):
     name: Optional[str] = None
     daily_salary: Optional[float] = None
+    project_id: Optional[str] = None
+    trade: Optional[str] = None
     is_active: Optional[bool] = None
 
 
