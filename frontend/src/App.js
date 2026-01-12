@@ -1181,19 +1181,27 @@ const PaymentSummary = () => {
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Base</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Adelantos</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Neto</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Saldo Obra</th>
               </tr>
             </thead>
             <tbody>
               {paymentData.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-12 text-slate-400">
+                  <td colSpan="7" className="text-center py-12 text-slate-400">
                     No hay datos para mostrar
                   </td>
                 </tr>
               ) : (
                 paymentData.map((payment, idx) => (
                   <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`payment-row-${payment.person.id}`}>
-                    <td className="py-4 px-6 text-sm text-slate-700 font-medium">{payment.person.name}</td>
+                    <td className="py-4 px-6">
+                      <div>
+                        <div className="text-sm text-slate-700 font-medium">{payment.person.name}</div>
+                        {payment.project && (
+                          <div className="text-xs text-slate-500">{payment.project}</div>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-4 px-6">
                       <Badge variant={payment.type === 'employee' ? 'default' : 'secondary'}>
                         {payment.type === 'employee' ? 'Empleado' : 'Contratista'}
@@ -1208,6 +1216,24 @@ const PaymentSummary = () => {
                     </td>
                     <td className="py-4 px-6 text-sm text-emerald-600 text-right font-bold font-mono-numbers">
                       {formatCurrency(payment.netPayment)}
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      {payment.type === 'contractor' ? (
+                        <div className="text-right">
+                          <div className={`text-sm font-bold font-mono-numbers ${
+                            payment.afterPaymentBalance < 0 ? 'text-rose-600' : 
+                            payment.afterPaymentBalance < payment.budget * 0.2 ? 'text-amber-600' : 
+                            'text-emerald-600'
+                          }`}>
+                            {formatCurrency(payment.afterPaymentBalance)}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            de {formatCurrency(payment.budget)}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-slate-400">-</span>
+                      )}
                     </td>
                   </tr>
                 ))
