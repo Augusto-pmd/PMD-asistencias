@@ -1385,25 +1385,47 @@ const PaymentSummary = () => {
 
   return (
     <div className="space-y-6" data-testid="payment-summary">
-      <div className="flex justify-between items-center">
+      {showReceipts ? (
         <div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Resumen de Pagos</h1>
-          <p className="text-slate-500">Calcula los pagos de la semana</p>
+          <div className="no-print mb-4 flex justify-between items-center">
+            <Button variant="outline" onClick={() => setShowReceipts(false)}>
+              ← Volver al Resumen
+            </Button>
+            <Button className="btn-primary" onClick={() => window.print()}>
+              🖨️ Imprimir Recibos
+            </Button>
+          </div>
+          <PrintableReceipts receipts={receiptsData} weekStart={weekStart} />
         </div>
-        <div className="flex gap-4 items-center">
-          <Input
-            type="date"
-            data-testid="payment-week-start-input"
-            value={weekStart}
-            onChange={(e) => setWeekStart(e.target.value)}
-            className="w-48"
-          />
-          <Button className="btn-primary" onClick={handleCalculatePayments} data-testid="calculate-payments-btn">
-            <DollarSign className="w-4 h-4 mr-2" />
-            Guardar en Historial
-          </Button>
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">Resumen de Pagos</h1>
+              <p className="text-slate-500">Calcula los pagos de la semana</p>
+            </div>
+            <div className="flex gap-4 items-center">
+              <Input
+                type="date"
+                data-testid="payment-week-start-input"
+                value={weekStart}
+                onChange={(e) => setWeekStart(e.target.value)}
+                className="w-48"
+              />
+              <Button 
+                className="btn-secondary" 
+                onClick={generateReceipts}
+                disabled={paymentData.length === 0}
+                data-testid="generate-receipts-btn"
+              >
+                📄 Generar Recibos
+              </Button>
+              <Button className="btn-primary" onClick={handleCalculatePayments} data-testid="calculate-payments-btn">
+                <DollarSign className="w-4 h-4 mr-2" />
+                Guardar en Historial
+              </Button>
+            </div>
+          </div>
 
       <Card className="p-6 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl shadow-sm">
         <div className="text-center">
