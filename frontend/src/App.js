@@ -405,7 +405,7 @@ const ContractorManagement = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState(null);
-  const [formData, setFormData] = useState({ name: '', weekly_payment: '' });
+  const [formData, setFormData] = useState({ name: '', weekly_payment: '', project_name: '', budget: '' });
 
   useEffect(() => {
     fetchContractors();
@@ -424,18 +424,20 @@ const ContractorManagement = () => {
   };
 
   const handleAddContractor = async () => {
-    if (!formData.name || !formData.weekly_payment) {
+    if (!formData.name || !formData.weekly_payment || !formData.project_name || !formData.budget) {
       toast.error('Por favor completa todos los campos');
       return;
     }
     try {
       await axios.post(`${API}/contractors`, {
         name: formData.name,
-        weekly_payment: parseFloat(formData.weekly_payment)
+        weekly_payment: parseFloat(formData.weekly_payment),
+        project_name: formData.project_name,
+        budget: parseFloat(formData.budget)
       });
       toast.success('Contratista agregado exitosamente');
       setIsAddModalOpen(false);
-      setFormData({ name: '', weekly_payment: '' });
+      setFormData({ name: '', weekly_payment: '', project_name: '', budget: '' });
       await fetchContractors();
     } catch (error) {
       console.error('Error adding contractor:', error);
@@ -444,19 +446,21 @@ const ContractorManagement = () => {
   };
 
   const handleEditContractor = async () => {
-    if (!formData.name || !formData.weekly_payment) {
+    if (!formData.name || !formData.weekly_payment || !formData.project_name || !formData.budget) {
       toast.error('Por favor completa todos los campos');
       return;
     }
     try {
       await axios.put(`${API}/contractors/${selectedContractor.id}`, {
         name: formData.name,
-        weekly_payment: parseFloat(formData.weekly_payment)
+        weekly_payment: parseFloat(formData.weekly_payment),
+        project_name: formData.project_name,
+        budget: parseFloat(formData.budget)
       });
       toast.success('Contratista actualizado exitosamente');
       setIsEditModalOpen(false);
       setSelectedContractor(null);
-      setFormData({ name: '', weekly_payment: '' });
+      setFormData({ name: '', weekly_payment: '', project_name: '', budget: '' });
       await fetchContractors();
     } catch (error) {
       console.error('Error updating contractor:', error);
@@ -478,7 +482,12 @@ const ContractorManagement = () => {
 
   const openEditModal = (contractor) => {
     setSelectedContractor(contractor);
-    setFormData({ name: contractor.name, weekly_payment: contractor.weekly_payment });
+    setFormData({ 
+      name: contractor.name, 
+      weekly_payment: contractor.weekly_payment,
+      project_name: contractor.project_name,
+      budget: contractor.budget
+    });
     setIsEditModalOpen(true);
   };
 
@@ -491,7 +500,7 @@ const ContractorManagement = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Contratistas</h1>
-          <p className="text-slate-500">Gestiona los contratistas con pago semanal fijo</p>
+          <p className="text-slate-500">Gestiona los contratistas con presupuesto por obra</p>
         </div>
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger asChild>
@@ -513,6 +522,27 @@ const ContractorManagement = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="María González"
+                />
+              </div>
+              <div>
+                <Label htmlFor="project_name">Obra / Proyecto</Label>
+                <Input
+                  id="project_name"
+                  data-testid="contractor-project-input"
+                  value={formData.project_name}
+                  onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
+                  placeholder="Casa Barrio Norte"
+                />
+              </div>
+              <div>
+                <Label htmlFor="budget">Presupuesto Total de la Obra</Label>
+                <Input
+                  id="budget"
+                  data-testid="contractor-budget-input"
+                  type="number"
+                  value={formData.budget}
+                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                  placeholder="500000"
                 />
               </div>
               <div>
@@ -541,42 +571,58 @@ const ContractorManagement = () => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Semanal</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Obra</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Semanal</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Presupuesto</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pagado</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Saldo</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {contractors.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-12 text-slate-400">
+                  <td colSpan="7" className="text-center py-12 text-slate-400">
                     No hay contratistas registrados
                   </td>
                 </tr>
               ) : (
-                contractors.map((contractor) => (
-                  <tr key={contractor.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`contractor-row-${contractor.id}`}>
-                    <td className="py-4 px-6 text-sm text-slate-700">{contractor.name}</td>
-                    <td className="py-4 px-6 text-sm text-slate-700 font-mono-numbers">
-                      {formatCurrency(contractor.weekly_payment)}
-                    </td>
-                    <td className="py-4 px-6">
-                      <Badge variant={contractor.is_active ? "success" : "secondary"} data-testid={`contractor-status-${contractor.id}`}>
-                        {contractor.is_active ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => openEditModal(contractor)} data-testid={`edit-contractor-${contractor.id}`}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteContractor(contractor.id)} data-testid={`delete-contractor-${contractor.id}`}>
-                          <Trash2 className="w-4 h-4 text-rose-500" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                contractors.map((contractor) => {
+                  const percentageUsed = (contractor.total_paid / contractor.budget) * 100;
+                  const isNearBudget = percentageUsed >= 80;
+                  const isOverBudget = contractor.remaining_balance < 0;
+                  
+                  return (
+                    <tr key={contractor.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`contractor-row-${contractor.id}`}>
+                      <td className="py-4 px-6 text-sm text-slate-700 font-medium">{contractor.name}</td>
+                      <td className="py-4 px-6 text-sm text-slate-600">{contractor.project_name}</td>
+                      <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
+                        {formatCurrency(contractor.weekly_payment)}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
+                        {formatCurrency(contractor.budget)}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
+                        {formatCurrency(contractor.total_paid || 0)}
+                      </td>
+                      <td className={`py-4 px-6 text-sm text-right font-bold font-mono-numbers ${
+                        isOverBudget ? 'text-rose-600' : isNearBudget ? 'text-amber-600' : 'text-emerald-600'
+                      }`}>
+                        {formatCurrency(contractor.remaining_balance)}
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => openEditModal(contractor)} data-testid={`edit-contractor-${contractor.id}`}>
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteContractor(contractor.id)} data-testid={`delete-contractor-${contractor.id}`}>
+                            <Trash2 className="w-4 h-4 text-rose-500" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -596,6 +642,25 @@ const ContractorManagement = () => {
                 data-testid="edit-contractor-name-input"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-project-name">Obra / Proyecto</Label>
+              <Input
+                id="edit-project-name"
+                data-testid="edit-contractor-project-input"
+                value={formData.project_name}
+                onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-budget">Presupuesto Total de la Obra</Label>
+              <Input
+                id="edit-budget"
+                data-testid="edit-contractor-budget-input"
+                type="number"
+                value={formData.budget}
+                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
               />
             </div>
             <div>
