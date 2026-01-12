@@ -181,6 +181,8 @@ async def create_employee(employee: EmployeeCreate):
         id=str(uuid4()),
         name=employee_dict['name'],
         daily_salary=employee_dict['daily_salary'],
+        project_id=employee_dict.get('project_id'),
+        trade=employee_dict.get('trade'),
         created_at=datetime.now(timezone.utc).isoformat(),
         is_active=True
     )
