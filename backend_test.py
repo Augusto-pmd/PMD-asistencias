@@ -406,6 +406,8 @@ class PayrollProAPITester:
                     print(f"   ❌ Contractor '{name}' missing budget fields")
         
         return True
+
+    def test_dashboard_stats(self):
         """Test Dashboard statistics"""
         print("\n" + "="*50)
         print("TESTING DASHBOARD STATISTICS")
