@@ -316,6 +316,163 @@ class PayrollProAPITester:
 
         return True
 
+    def test_late_hours_discount_calculation(self):
+        """Test late hours discount calculation in payment system"""
+        print("\n" + "="*50)
+        print("TESTING LATE HOURS DISCOUNT CALCULATION")
+        print("="*50)
+
+        if not self.employee_ids:
+            print("❌ No employees available for late hours testing")
+            return False
+
+        # Create a test employee with known daily salary for calculation
+        employee_data = {
+            "name": "Test Employee Late Hours",
+            "daily_salary": 8000.0  # 8000 / 8 = 1000 per hour
+        }
+        success, response = self.run_test("Create Employee for Late Hours Test", "POST", "employees", 200, employee_data)
+        if not success or 'id' not in response:
+            print("❌ Failed to create test employee")
+            return False
+        
+        test_employee_id = response['id']
+        self.employee_ids.append(test_employee_id)
+        print(f"   Created test employee ID: {test_employee_id}")
+        print(f"   Daily salary: {employee_data['daily_salary']}")
+        print(f"   Hourly rate: {employee_data['daily_salary'] / 8}")
+
+        # Create attendance records for the week
+        week_dates = []
+        for i in range(5):  # Monday to Friday
+            date = datetime.strptime(self.current_week_start, "%Y-%m-%d") + timedelta(days=i)
+            week_dates.append(date.strftime("%Y-%m-%d"))
+
+        # Monday: Present
+        attendance_data = {
+            "employee_id": test_employee_id,
+            "date": week_dates[0],
+            "status": "present",
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Monday - Present", "POST", "attendance", 200, attendance_data)
+
+        # Tuesday: Late 2 hours
+        attendance_data = {
+            "employee_id": test_employee_id,
+            "date": week_dates[1],
+            "status": "late",
+            "late_hours": 2.0,
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Tuesday - Late 2 hours", "POST", "attendance", 200, attendance_data)
+
+        # Wednesday: Present
+        attendance_data = {
+            "employee_id": test_employee_id,
+            "date": week_dates[2],
+            "status": "present",
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Wednesday - Present", "POST", "attendance", 200, attendance_data)
+
+        # Thursday: Late 1 hour
+        attendance_data = {
+            "employee_id": test_employee_id,
+            "date": week_dates[3],
+            "status": "late",
+            "late_hours": 1.0,
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Thursday - Late 1 hour", "POST", "attendance", 200, attendance_data)
+
+        # Friday: Present
+        attendance_data = {
+            "employee_id": test_employee_id,
+            "date": week_dates[4],
+            "status": "present",
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Friday - Present", "POST", "attendance", 200, attendance_data)
+
+        # Add an advance for complete calculation test
+        advance_data = {
+            "employee_id": test_employee_id,
+            "amount": 1000.0,
+            "date": week_dates[0],
+            "description": "Test advance for late hours calculation",
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Add Advance for Test Employee", "POST", "advances", 200, advance_data)
+        if success and 'id' in response:
+            self.advance_ids.append(response['id'])
+
+        # Test payment calculation with late hours
+        calculation_data = {
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Calculate Payments with Late Hours", "POST", "payments/calculate", 200, calculation_data)
+        if success:
+            print(f"   Payment calculation completed: {response}")
+
+        # Verify the calculation by checking payment history
+        success, response = self.run_test("Get Payment History for Verification", "GET", "payments/history", 200)
+        if success:
+            # Find our test employee's payment record
+            test_payment = None
+            for payment in response:
+                if payment.get('employee_id') == test_employee_id:
+                    test_payment = payment
+                    break
+            
+            if test_payment:
+                print(f"   Found payment record for test employee")
+                print(f"   Days worked: {test_payment.get('days_worked')}")
+                print(f"   Total salary (after late discount): {test_payment.get('total_salary')}")
+                print(f"   Total advances: {test_payment.get('total_advances')}")
+                print(f"   Net payment: {test_payment.get('net_payment')}")
+                
+                # Expected calculation:
+                # Days worked: 5 (all days marked as present or late)
+                # Gross salary: 5 * 8000 = 40000
+                # Late hours: 2 + 1 = 3 hours
+                # Hourly rate: 8000 / 8 = 1000
+                # Late discount: 3 * 1000 = 3000
+                # Total salary after discount: 40000 - 3000 = 37000
+                # Net payment: 37000 - 1000 (advance) = 36000
+                
+                expected_days = 5
+                expected_gross = 5 * 8000
+                expected_late_discount = 3 * 1000
+                expected_total_salary = expected_gross - expected_late_discount
+                expected_net = expected_total_salary - 1000
+                
+                print(f"\n   CALCULATION VERIFICATION:")
+                print(f"   Expected days worked: {expected_days}")
+                print(f"   Expected gross salary: {expected_gross}")
+                print(f"   Expected late discount: {expected_late_discount}")
+                print(f"   Expected total salary: {expected_total_salary}")
+                print(f"   Expected net payment: {expected_net}")
+                
+                if test_payment.get('days_worked') == expected_days:
+                    print("   ✅ Days worked calculated correctly")
+                else:
+                    print(f"   ❌ Days worked incorrect: {test_payment.get('days_worked')} vs {expected_days}")
+                
+                if test_payment.get('total_salary') == expected_total_salary:
+                    print("   ✅ Total salary (with late discount) calculated correctly")
+                else:
+                    print(f"   ❌ Total salary incorrect: {test_payment.get('total_salary')} vs {expected_total_salary}")
+                
+                if test_payment.get('net_payment') == expected_net:
+                    print("   ✅ Net payment calculated correctly")
+                else:
+                    print(f"   ❌ Net payment incorrect: {test_payment.get('net_payment')} vs {expected_net}")
+            else:
+                print("   ❌ Payment record not found for test employee")
+
+        return True
+
     def test_advance_management(self):
         """Test Advance management"""
         print("\n" + "="*50)
