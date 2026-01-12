@@ -201,6 +201,10 @@ async def create_contractor(contractor: ContractorCreate):
         id=str(uuid4()),
         name=contractor_dict['name'],
         weekly_payment=contractor_dict['weekly_payment'],
+        project_name=contractor_dict['project_name'],
+        budget=contractor_dict['budget'],
+        total_paid=0.0,
+        remaining_balance=contractor_dict['budget'],
         created_at=datetime.now(timezone.utc).isoformat(),
         is_active=True
     )
@@ -212,6 +216,8 @@ async def create_contractor(contractor: ContractorCreate):
 @api_router.get("/contractors", response_model=List[Contractor])
 async def get_contractors():
     contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
+    for contractor in contractors:
+        contractor['remaining_balance'] = contractor['budget'] - contractor.get('total_paid', 0)
     return contractors
 
 
