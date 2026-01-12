@@ -1538,12 +1538,12 @@ const PaymentSummary = () => {
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
               <h1 className="text-4xl font-bold text-slate-900 mb-2">Resumen de Pagos</h1>
               <p className="text-slate-500">Calcula los pagos de la semana</p>
             </div>
-            <div className="flex gap-4 items-center">
+            <div className="flex flex-wrap gap-2 items-center">
               <Input
                 type="date"
                 data-testid="payment-week-start-input"
@@ -1554,10 +1554,26 @@ const PaymentSummary = () => {
               <Button 
                 className="btn-secondary" 
                 onClick={generateReceipts}
-                disabled={paymentData.length === 0}
+                disabled={paymentData.filter(p => p.type === 'employee').length === 0}
                 data-testid="generate-receipts-btn"
               >
-                📄 Generar Recibos
+                📄 Recibos Empleados
+              </Button>
+              <Button 
+                className="btn-secondary" 
+                onClick={generateContractorReceipts}
+                disabled={paymentData.filter(p => p.type === 'contractor').length === 0}
+                data-testid="generate-contractor-receipts-btn"
+              >
+                📄 Recibos Contratistas
+              </Button>
+              <Button 
+                className="btn-secondary" 
+                onClick={generateAllReceipts}
+                disabled={paymentData.length === 0}
+                data-testid="generate-all-receipts-btn"
+              >
+                📄 Todos los Recibos
               </Button>
               <Button className="btn-primary" onClick={handleCalculatePayments} data-testid="calculate-payments-btn">
                 <DollarSign className="w-4 h-4 mr-2" />
