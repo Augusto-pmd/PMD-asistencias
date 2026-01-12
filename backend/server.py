@@ -226,6 +226,7 @@ async def get_contractor(contractor_id: str):
     contractor = await db.contractors.find_one({"id": contractor_id}, {"_id": 0})
     if not contractor:
         raise HTTPException(status_code=404, detail="Contractor not found")
+    contractor['remaining_balance'] = contractor['budget'] - contractor.get('total_paid', 0)
     return contractor
 
 
