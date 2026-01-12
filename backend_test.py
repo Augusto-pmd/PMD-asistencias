@@ -109,6 +109,63 @@ class PayrollProAPITester:
 
         return True
 
+    def test_contractor_crud(self):
+        """Test Contractor CRUD operations"""
+        print("\n" + "="*50)
+        print("TESTING CONTRACTOR MANAGEMENT")
+        print("="*50)
+        
+        # Test Create Contractor
+        contractor_data = {
+            "name": "María González Test",
+            "weekly_payment": 15000.0
+        }
+        success, response = self.run_test("Create Contractor", "POST", "contractors", 200, contractor_data)
+        if success and 'id' in response:
+            contractor_id = response['id']
+            self.contractor_ids.append(contractor_id)
+            print(f"   Created contractor ID: {contractor_id}")
+        else:
+            return False
+
+        # Test Create Second Contractor
+        contractor_data2 = {
+            "name": "Carlos López Test",
+            "weekly_payment": 20000.0
+        }
+        success, response = self.run_test("Create Second Contractor", "POST", "contractors", 200, contractor_data2)
+        if success and 'id' in response:
+            contractor_id2 = response['id']
+            self.contractor_ids.append(contractor_id2)
+            print(f"   Created second contractor ID: {contractor_id2}")
+
+        # Test Get All Contractors
+        success, response = self.run_test("Get All Contractors", "GET", "contractors", 200)
+        if success:
+            print(f"   Found {len(response)} contractors")
+
+        # Test Get Single Contractor
+        success, response = self.run_test("Get Single Contractor", "GET", f"contractors/{contractor_id}", 200)
+        if success:
+            print(f"   Contractor name: {response.get('name', 'N/A')}")
+            print(f"   Weekly payment: {response.get('weekly_payment', 'N/A')}")
+
+        # Test Update Contractor
+        update_data = {
+            "name": "María González Updated",
+            "weekly_payment": 16000.0
+        }
+        success, response = self.run_test("Update Contractor", "PUT", f"contractors/{contractor_id}", 200, update_data)
+
+        # Test Get Updated Contractor
+        success, response = self.run_test("Verify Contractor Update", "GET", f"contractors/{contractor_id}", 200)
+        if success and response.get('name') == "María González Updated":
+            print("   ✅ Contractor update verified")
+        else:
+            print("   ❌ Contractor update verification failed")
+
+        return True
+
     def test_attendance_management(self):
         """Test Attendance management"""
         print("\n" + "="*50)
