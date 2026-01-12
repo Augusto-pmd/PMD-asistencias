@@ -288,6 +288,53 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
           text-transform: uppercase;
         }
 
+        .receipt-breakdown {
+          margin: 12px 0;
+          padding: 8px;
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          border-radius: 4px;
+        }
+
+        .breakdown-title {
+          font-weight: bold;
+          font-size: 10px;
+          color: #1e40af;
+          margin-bottom: 6px;
+          text-transform: uppercase;
+        }
+
+        .breakdown-subtitle {
+          font-weight: 600;
+          font-size: 9px;
+          color: #475569;
+          margin-top: 6px;
+          margin-bottom: 3px;
+        }
+
+        .breakdown-item {
+          display: flex;
+          justify-content: space-between;
+          font-size: 9px;
+          margin-bottom: 3px;
+          color: #1e293b;
+        }
+
+        .breakdown-item.deduction {
+          color: #dc2626;
+        }
+
+        .breakdown-total {
+          display: flex;
+          justify-content: space-between;
+          font-size: 10px;
+          font-weight: bold;
+          margin-top: 6px;
+          padding-top: 6px;
+          border-top: 2px solid #1e40af;
+          color: #1e40af;
+        }
+
         .receipt-footer {
           display: flex;
           justify-content: space-between;
