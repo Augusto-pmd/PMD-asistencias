@@ -74,7 +74,7 @@ const Dashboard = () => {
         <p className="text-slate-500">Resumen de la semana actual</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-employees">
           <div className="flex items-start justify-between">
             <div>
@@ -88,17 +88,15 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-total-payment">
+        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-contractors">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Total a Pagar</p>
-              <p className="text-3xl font-bold text-slate-900 font-mono-numbers">
-                {formatCurrency(stats?.total_payment_this_week || 0)}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">esta semana</p>
+              <p className="text-sm font-medium text-slate-500 mb-1">Contratistas Activos</p>
+              <p className="text-3xl font-bold text-slate-900">{stats?.active_contractors || 0}</p>
+              <p className="text-xs text-slate-400 mt-1">de {stats?.total_contractors || 0} totales</p>
             </div>
-            <div className="p-3 bg-emerald-50 rounded-lg">
-              <DollarSign className="w-6 h-6 text-emerald-600" />
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <Briefcase className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </Card>
@@ -112,35 +110,55 @@ const Dashboard = () => {
               </p>
               <p className="text-xs text-slate-400 mt-1">descontados</p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-lg">
-              <Calendar className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 stat-card bg-white border border-slate-200 rounded-xl shadow-sm" data-testid="stat-card-net-payment">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Pago Neto</p>
-              <p className="text-3xl font-bold text-emerald-600 font-mono-numbers">
-                {formatCurrency(stats?.net_payment_this_week || 0)}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">después de adelantos</p>
-            </div>
-            <div className="p-3 bg-emerald-50 rounded-lg">
-              <DollarSign className="w-6 h-6 text-emerald-600" />
+            <div className="p-3 bg-rose-50 rounded-lg">
+              <DollarSign className="w-6 h-6 text-rose-600" />
             </div>
           </div>
         </Card>
       </div>
 
+      <Card className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl shadow-sm">
+        <div className="text-center">
+          <p className="text-sm font-medium text-slate-600 mb-2">Total a Pagar el Viernes</p>
+          <p className="text-5xl font-bold text-emerald-700 font-mono-numbers mb-4">
+            {formatCurrency(stats?.total_to_pay_friday || 0)}
+          </p>
+          <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
+            <div className="bg-white/50 rounded-lg p-3">
+              <p className="text-slate-500 mb-1">Empleados</p>
+              <p className="font-bold text-slate-900 font-mono-numbers">
+                {formatCurrency(stats?.total_payment_this_week || 0)}
+              </p>
+            </div>
+            <div className="bg-white/50 rounded-lg p-3">
+              <p className="text-slate-500 mb-1">Contratistas</p>
+              <p className="font-bold text-slate-900 font-mono-numbers">
+                {formatCurrency(stats?.contractors_payment_this_week || 0)}
+              </p>
+            </div>
+            <div className="bg-white/50 rounded-lg p-3">
+              <p className="text-slate-500 mb-1">Adelantos</p>
+              <p className="font-bold text-rose-600 font-mono-numbers">
+                -{formatCurrency(stats?.total_advances_this_week || 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <Card className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
         <h2 className="text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link to="/employees">
             <Button className="w-full btn-primary" data-testid="quick-action-employees">
               <Users className="w-4 h-4 mr-2" />
               Gestionar Empleados
+            </Button>
+          </Link>
+          <Link to="/contractors">
+            <Button className="w-full btn-primary" data-testid="quick-action-contractors">
+              <Briefcase className="w-4 h-4 mr-2" />
+              Gestionar Contratistas
             </Button>
           </Link>
           <Link to="/attendance">
