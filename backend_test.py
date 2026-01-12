@@ -294,9 +294,9 @@ class PayrollProAPITester:
         return True
 
     def test_payment_calculation(self):
-        """Test Payment calculation and history"""
+        """Test Payment calculation and history with budget tracking"""
         print("\n" + "="*50)
-        print("TESTING PAYMENT CALCULATION")
+        print("TESTING PAYMENT CALCULATION WITH BUDGET TRACKING")
         print("="*50)
 
         # Test Calculate Payments
@@ -306,6 +306,59 @@ class PayrollProAPITester:
         success, response = self.run_test("Calculate Payments", "POST", "payments/calculate", 200, calculation_data)
         if success:
             print(f"   Payment calculation result: {response}")
+            contractors_updated = response.get('contractors_updated', 0)
+            print(f"   Contractors updated: {contractors_updated}")
+
+        # Verify contractor total_paid was updated
+        if self.contractor_ids:
+            contractor_id = self.contractor_ids[0]
+            success, response = self.run_test("Check Contractor After Payment", "GET", f"contractors/{contractor_id}", 200)
+            if success:
+                total_paid = response.get('total_paid', 0)
+                weekly_payment = response.get('weekly_payment', 0)
+                budget = response.get('budget', 0)
+                remaining_balance = response.get('remaining_balance', 0)
+                
+                print(f"   Total paid after 1st payment: {total_paid}")
+                print(f"   Weekly payment: {weekly_payment}")
+                print(f"   Budget: {budget}")
+                print(f"   Remaining balance: {remaining_balance}")
+                
+                if total_paid == weekly_payment:
+                    print("   ✅ Total paid equals weekly payment after first calculation")
+                else:
+                    print(f"   ❌ Total paid mismatch: {total_paid} vs {weekly_payment}")
+                    
+                expected_balance = budget - total_paid
+                if remaining_balance == expected_balance:
+                    print("   ✅ Remaining balance calculated correctly")
+                else:
+                    print(f"   ❌ Remaining balance error: {remaining_balance} vs {expected_balance}")
+
+        # Test second payment calculation
+        success, response = self.run_test("Calculate Payments Again", "POST", "payments/calculate", 200, calculation_data)
+        if success and self.contractor_ids:
+            contractor_id = self.contractor_ids[0]
+            success, response = self.run_test("Check Contractor After 2nd Payment", "GET", f"contractors/{contractor_id}", 200)
+            if success:
+                total_paid = response.get('total_paid', 0)
+                weekly_payment = response.get('weekly_payment', 0)
+                budget = response.get('budget', 0)
+                remaining_balance = response.get('remaining_balance', 0)
+                
+                print(f"   Total paid after 2nd payment: {total_paid}")
+                print(f"   Remaining balance: {remaining_balance}")
+                
+                if total_paid == weekly_payment * 2:
+                    print("   ✅ Total paid accumulated correctly (2x weekly payment)")
+                else:
+                    print(f"   ❌ Total paid accumulation error: {total_paid} vs {weekly_payment * 2}")
+                    
+                expected_balance = budget - total_paid
+                if remaining_balance == expected_balance:
+                    print("   ✅ Remaining balance updated correctly after 2nd payment")
+                else:
+                    print(f"   ❌ Remaining balance error after 2nd payment: {remaining_balance} vs {expected_balance}")
 
         # Test Get Payment History
         success, response = self.run_test("Get Payment History", "GET", "payments/history", 200)
