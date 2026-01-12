@@ -890,6 +890,37 @@ const AttendanceSheet = () => {
           <span className="text-slate-600 ml-auto">Haz clic en las celdas para cambiar el estado</span>
         </div>
       </Card>
+
+      <Dialog open={showLateModal} onOpenChange={setShowLateModal}>
+        <DialogContent data-testid="late-hours-dialog">
+          <DialogHeader>
+            <DialogTitle>Registrar Horas de Retraso</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="late_hours">Horas de Retraso</Label>
+              <Input
+                id="late_hours"
+                data-testid="late-hours-input"
+                type="number"
+                step="0.5"
+                min="0"
+                max="8"
+                value={lateHours}
+                onChange={(e) => setLateHours(e.target.value)}
+                placeholder="Ej: 1, 1.5, 2"
+              />
+              <p className="text-xs text-slate-500 mt-2">
+                Se descontará el equivalente de las horas ingresadas del salario diario (jornada de 8 horas)
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLateModal(false)}>Cancelar</Button>
+            <Button onClick={handleLateSubmit} data-testid="submit-late-hours-btn">Guardar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
