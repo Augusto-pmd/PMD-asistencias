@@ -860,6 +860,9 @@ const ContractorManagement = () => {
                       </td>
                       <td className="py-4 px-6 text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => openCertificationsModal(contractor)} data-testid={`history-contractor-${contractor.id}`} title="Ver certificaciones">
+                            <History className="w-4 h-4 text-blue-600" />
+                          </Button>
                           <Button variant="ghost" size="sm" onClick={() => openEditModal(contractor)} data-testid={`edit-contractor-${contractor.id}`}>
                             <Edit2 className="w-4 h-4" />
                           </Button>
