@@ -1163,10 +1163,10 @@ const PaymentSummary = () => {
         </div>
       </div>
 
-      <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl shadow-sm">
+      <Card className="p-6 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl shadow-sm">
         <div className="text-center">
-          <p className="text-sm font-medium text-slate-600 mb-2">Total a Disponer el Viernes</p>
-          <p className="text-5xl font-bold text-slate-900 font-mono-numbers">{formatCurrency(totalToPay)}</p>
+          <p className="text-sm font-medium text-blue-700 mb-2">Total a Disponer el Viernes</p>
+          <p className="text-5xl font-bold text-blue-900 font-mono-numbers">{formatCurrency(totalToPay)}</p>
         </div>
       </Card>
 
