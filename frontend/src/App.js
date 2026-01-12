@@ -283,14 +283,16 @@ const Dashboard = () => {
 
 const EmployeeManagement = () => {
   const [employees, setEmployees] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [formData, setFormData] = useState({ name: '', daily_salary: '' });
+  const [formData, setFormData] = useState({ name: '', daily_salary: '', project_id: '', trade: '' });
 
   useEffect(() => {
     fetchEmployees();
+    fetchProjects();
   }, []);
 
   const fetchEmployees = async () => {
@@ -305,20 +307,31 @@ const EmployeeManagement = () => {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${API}/projects`);
+      setProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
   const handleAddEmployee = async () => {
-    if (!formData.name || !formData.daily_salary) {
-      toast.error('Por favor completa todos los campos');
+    if (!formData.name || !formData.daily_salary || !formData.project_id || !formData.trade) {
+      toast.error('Por favor completa todos los campos obligatorios');
       return;
     }
     try {
       await axios.post(`${API}/employees`, {
         name: formData.name,
-        daily_salary: parseFloat(formData.daily_salary)
+        daily_salary: parseFloat(formData.daily_salary),
+        project_id: formData.project_id,
+        trade: formData.trade
       });
       toast.success('Empleado agregado exitosamente');
       setIsAddModalOpen(false);
-      setFormData({ name: '', daily_salary: '' });
-      fetchEmployees();
+      setFormData({ name: '', daily_salary: '', project_id: '', trade: '' });
+      await fetchEmployees();
     } catch (error) {
       console.error('Error adding employee:', error);
       toast.error('Error al agregar empleado');
@@ -326,20 +339,22 @@ const EmployeeManagement = () => {
   };
 
   const handleEditEmployee = async () => {
-    if (!formData.name || !formData.daily_salary) {
-      toast.error('Por favor completa todos los campos');
+    if (!formData.name || !formData.daily_salary || !formData.project_id || !formData.trade) {
+      toast.error('Por favor completa todos los campos obligatorios');
       return;
     }
     try {
       await axios.put(`${API}/employees/${selectedEmployee.id}`, {
         name: formData.name,
-        daily_salary: parseFloat(formData.daily_salary)
+        daily_salary: parseFloat(formData.daily_salary),
+        project_id: formData.project_id,
+        trade: formData.trade
       });
       toast.success('Empleado actualizado exitosamente');
       setIsEditModalOpen(false);
       setSelectedEmployee(null);
-      setFormData({ name: '', daily_salary: '' });
-      fetchEmployees();
+      setFormData({ name: '', daily_salary: '', project_id: '', trade: '' });
+      await fetchEmployees();
     } catch (error) {
       console.error('Error updating employee:', error);
       toast.error('Error al actualizar empleado');
