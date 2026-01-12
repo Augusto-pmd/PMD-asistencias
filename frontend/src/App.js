@@ -146,7 +146,7 @@ const Dashboard = () => {
         </div>
       </Card>
 
-      <Card className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+      <Card className="p-6 bg-white border border-blue-200 rounded-xl shadow-sm">
         <h2 className="text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link to="/employees">
@@ -315,7 +315,7 @@ const EmployeeManagement = () => {
         </Dialog>
       </div>
 
-      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Card className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
@@ -565,7 +565,7 @@ const ContractorManagement = () => {
         </Dialog>
       </div>
 
-      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Card className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
@@ -772,7 +772,7 @@ const AttendanceSheet = () => {
         />
       </div>
 
-      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Card className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
@@ -1001,7 +1001,7 @@ const AdvanceManagement = () => {
         </Dialog>
       </div>
 
-      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Card className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
@@ -1170,7 +1170,7 @@ const PaymentSummary = () => {
         </div>
       </Card>
 
-      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Card className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
@@ -1287,7 +1287,7 @@ const PaymentHistoryPage = () => {
         <p className="text-slate-500">Consulta los pagos anteriores</p>
       </div>
 
-      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Card className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
