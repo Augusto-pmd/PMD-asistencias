@@ -689,6 +689,9 @@ const AttendanceSheet = () => {
   const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
   const [attendance, setAttendance] = useState({});
   const [loading, setLoading] = useState(true);
+  const [showLateModal, setShowLateModal] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [lateHours, setLateHours] = useState('');
 
   useEffect(() => {
     fetchEmployees();
@@ -718,7 +721,10 @@ const AttendanceSheet = () => {
       const attendanceMap = {};
       response.data.forEach(record => {
         const key = `${record.employee_id}-${record.date}`;
-        attendanceMap[key] = record.status;
+        attendanceMap[key] = {
+          status: record.status,
+          late_hours: record.late_hours || 0
+        };
       });
       setAttendance(attendanceMap);
     } catch (error) {
@@ -732,21 +738,52 @@ const AttendanceSheet = () => {
     const currentIndex = statuses.indexOf(currentStatus);
     const nextStatus = statuses[(currentIndex + 1) % statuses.length];
 
+    if (nextStatus === 'late') {
+      setSelectedCell({ employeeId, date });
+      setLateHours('');
+      setShowLateModal(true);
+    } else {
+      await updateAttendance(employeeId, date, nextStatus, 0);
+    }
+  };
+
+  const updateAttendance = async (employeeId, date, status, hours = 0) => {
     try {
       await axios.post(`${API}/attendance`, {
         employee_id: employeeId,
         date: date,
-        status: nextStatus,
+        status: status,
+        late_hours: hours,
         week_start_date: weekStart
       });
       
       const key = `${employeeId}-${date}`;
-      setAttendance({ ...attendance, [key]: nextStatus });
+      setAttendance({ 
+        ...attendance, 
+        [key]: { status: status, late_hours: hours }
+      });
       toast.success('Asistencia actualizada');
     } catch (error) {
       console.error('Error updating attendance:', error);
       toast.error('Error al actualizar asistencia');
     }
+  };
+
+  const handleLateSubmit = async () => {
+    if (!lateHours || parseFloat(lateHours) < 0) {
+      toast.error('Por favor ingresa las horas de retraso');
+      return;
+    }
+    
+    await updateAttendance(
+      selectedCell.employeeId, 
+      selectedCell.date, 
+      'late', 
+      parseFloat(lateHours)
+    );
+    setShowLateModal(false);
+    setSelectedCell(null);
+    setLateHours('');
   };
 
   const weekDates = getWeekDates(weekStart);
