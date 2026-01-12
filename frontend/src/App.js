@@ -399,6 +399,226 @@ const EmployeeManagement = () => {
   );
 };
 
+const ContractorManagement = () => {
+  const [contractors, setContractors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedContractor, setSelectedContractor] = useState(null);
+  const [formData, setFormData] = useState({ name: '', weekly_payment: '' });
+
+  useEffect(() => {
+    fetchContractors();
+  }, []);
+
+  const fetchContractors = async () => {
+    try {
+      const response = await axios.get(`${API}/contractors`);
+      setContractors(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching contractors:', error);
+      toast.error('Error al cargar contratistas');
+      setLoading(false);
+    }
+  };
+
+  const handleAddContractor = async () => {
+    if (!formData.name || !formData.weekly_payment) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+    try {
+      await axios.post(`${API}/contractors`, {
+        name: formData.name,
+        weekly_payment: parseFloat(formData.weekly_payment)
+      });
+      toast.success('Contratista agregado exitosamente');
+      setIsAddModalOpen(false);
+      setFormData({ name: '', weekly_payment: '' });
+      await fetchContractors();
+    } catch (error) {
+      console.error('Error adding contractor:', error);
+      toast.error('Error al agregar contratista');
+    }
+  };
+
+  const handleEditContractor = async () => {
+    if (!formData.name || !formData.weekly_payment) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+    try {
+      await axios.put(`${API}/contractors/${selectedContractor.id}`, {
+        name: formData.name,
+        weekly_payment: parseFloat(formData.weekly_payment)
+      });
+      toast.success('Contratista actualizado exitosamente');
+      setIsEditModalOpen(false);
+      setSelectedContractor(null);
+      setFormData({ name: '', weekly_payment: '' });
+      await fetchContractors();
+    } catch (error) {
+      console.error('Error updating contractor:', error);
+      toast.error('Error al actualizar contratista');
+    }
+  };
+
+  const handleDeleteContractor = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este contratista?')) return;
+    try {
+      await axios.delete(`${API}/contractors/${id}`);
+      toast.success('Contratista eliminado exitosamente');
+      await fetchContractors();
+    } catch (error) {
+      console.error('Error deleting contractor:', error);
+      toast.error('Error al eliminar contratista');
+    }
+  };
+
+  const openEditModal = (contractor) => {
+    setSelectedContractor(contractor);
+    setFormData({ name: contractor.name, weekly_payment: contractor.weekly_payment });
+    setIsEditModalOpen(true);
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  return (
+    <div className="space-y-6" data-testid="contractor-management">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Contratistas</h1>
+          <p className="text-slate-500">Gestiona los contratistas con pago semanal fijo</p>
+        </div>
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="btn-primary" data-testid="add-contractor-btn">
+              <Plus className="w-4 h-4 mr-2" />
+              Agregar Contratista
+            </Button>
+          </DialogTrigger>
+          <DialogContent data-testid="add-contractor-dialog">
+            <DialogHeader>
+              <DialogTitle>Agregar Nuevo Contratista</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="name">Nombre Completo</Label>
+                <Input
+                  id="name"
+                  data-testid="contractor-name-input"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="María González"
+                />
+              </div>
+              <div>
+                <Label htmlFor="weekly_payment">Pago Semanal</Label>
+                <Input
+                  id="weekly_payment"
+                  data-testid="contractor-payment-input"
+                  type="number"
+                  value={formData.weekly_payment}
+                  onChange={(e) => setFormData({ ...formData, weekly_payment: e.target.value })}
+                  placeholder="15000"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAddContractor} data-testid="submit-contractor-btn">Agregar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Semanal</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contractors.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center py-12 text-slate-400">
+                    No hay contratistas registrados
+                  </td>
+                </tr>
+              ) : (
+                contractors.map((contractor) => (
+                  <tr key={contractor.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`contractor-row-${contractor.id}`}>
+                    <td className="py-4 px-6 text-sm text-slate-700">{contractor.name}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700 font-mono-numbers">
+                      {formatCurrency(contractor.weekly_payment)}
+                    </td>
+                    <td className="py-4 px-6">
+                      <Badge variant={contractor.is_active ? "success" : "secondary"} data-testid={`contractor-status-${contractor.id}`}>
+                        {contractor.is_active ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => openEditModal(contractor)} data-testid={`edit-contractor-${contractor.id}`}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteContractor(contractor.id)} data-testid={`delete-contractor-${contractor.id}`}>
+                          <Trash2 className="w-4 h-4 text-rose-500" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent data-testid="edit-contractor-dialog">
+          <DialogHeader>
+            <DialogTitle>Editar Contratista</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="edit-name">Nombre Completo</Label>
+              <Input
+                id="edit-name"
+                data-testid="edit-contractor-name-input"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-weekly-payment">Pago Semanal</Label>
+              <Input
+                id="edit-weekly-payment"
+                data-testid="edit-contractor-payment-input"
+                type="number"
+                value={formData.weekly_payment}
+                onChange={(e) => setFormData({ ...formData, weekly_payment: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleEditContractor} data-testid="update-contractor-btn">Actualizar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 const AttendanceSheet = () => {
   const [employees, setEmployees] = useState([]);
   const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
