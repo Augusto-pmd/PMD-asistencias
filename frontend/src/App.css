@@ -132,3 +132,15 @@
     padding: 0.5rem 1rem;
   }
 }
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
