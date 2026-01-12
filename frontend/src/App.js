@@ -1163,16 +1163,27 @@ const PaymentSummary = () => {
       const employeeAttendance = att.filter(a => a.employee_id === employee.id);
       const daysWorked = employeeAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
       
+      // Calcular descuento por horas tarde
+      const totalLateHours = employeeAttendance
+        .filter(a => a.status === 'late')
+        .reduce((sum, a) => sum + (a.late_hours || 0), 0);
+      const hourlyRate = employee.daily_salary / 8;
+      const lateDiscount = totalLateHours * hourlyRate;
+      
       const employeeAdvances = adv.filter(a => a.employee_id === employee.id && a.week_start_date === weekStart);
       const totalAdvances = employeeAdvances.reduce((sum, a) => sum + a.amount, 0);
       
-      const totalSalary = daysWorked * employee.daily_salary;
+      const grossSalary = daysWorked * employee.daily_salary;
+      const totalSalary = grossSalary - lateDiscount;
       const netPayment = totalSalary - totalAdvances;
       
       payments.push({
         type: 'employee',
         person: employee,
         daysWorked,
+        grossSalary,
+        lateDiscount,
+        lateHours: totalLateHours,
         totalSalary,
         totalAdvances,
         netPayment
