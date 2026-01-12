@@ -535,6 +535,32 @@ const EmployeeManagement = () => {
               />
             </div>
             <div>
+              <Label htmlFor="edit-project">Obra</Label>
+              <Select value={formData.project_id} onValueChange={(value) => setFormData({ ...formData, project_id: value })}>
+                <SelectTrigger data-testid="edit-employee-project-select">
+                  <SelectValue placeholder="Selecciona una obra" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.filter(p => p.is_active).map(project => (
+                    <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-trade">Rubro</Label>
+              <Select value={formData.trade} onValueChange={(value) => setFormData({ ...formData, trade: value })}>
+                <SelectTrigger data-testid="edit-employee-trade-select">
+                  <SelectValue placeholder="Selecciona un rubro" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRADES.map(trade => (
+                    <SelectItem key={trade} value={trade}>{trade}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="edit-salary">Salario Diario</Label>
               <Input
                 id="edit-salary"
