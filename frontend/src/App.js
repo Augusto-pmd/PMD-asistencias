@@ -1264,6 +1264,8 @@ const PaymentSummary = () => {
   const [advances, setAdvances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [paymentData, setPaymentData] = useState([]);
+  const [showReceipts, setShowReceipts] = useState(false);
+  const [receiptsData, setReceiptsData] = useState([]);
 
   useEffect(() => {
     fetchData();
