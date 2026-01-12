@@ -605,6 +605,7 @@ const ContractorManagement = () => {
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Semanal</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Presupuesto</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pagado</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">% Consumido</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Saldo</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
               </tr>
@@ -612,13 +613,13 @@ const ContractorManagement = () => {
             <tbody>
               {contractors.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-12 text-slate-400">
+                  <td colSpan="8" className="text-center py-12 text-slate-400">
                     No hay contratistas registrados
                   </td>
                 </tr>
               ) : (
                 contractors.map((contractor) => {
-                  const percentageUsed = (contractor.total_paid / contractor.budget) * 100;
+                  const percentageUsed = contractor.budget > 0 ? (contractor.total_paid / contractor.budget) * 100 : 0;
                   const isNearBudget = percentageUsed >= 80;
                   const isOverBudget = contractor.remaining_balance < 0;
                   
@@ -634,6 +635,11 @@ const ContractorManagement = () => {
                       </td>
                       <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
                         {formatCurrency(contractor.total_paid || 0)}
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="min-w-[120px]">
+                          <ProgressBar percentage={percentageUsed} />
+                        </div>
                       </td>
                       <td className={`py-4 px-6 text-sm text-right font-bold font-mono-numbers ${
                         isOverBudget ? 'text-rose-600' : isNearBudget ? 'text-amber-600' : 'text-emerald-600'
