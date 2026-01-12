@@ -342,16 +342,16 @@ const EmployeeManagement = () => {
   };
 
   const handleEditEmployee = async () => {
-    if (!formData.name || !formData.daily_salary || !formData.project_id || !formData.trade) {
-      toast.error('Por favor completa todos los campos obligatorios');
+    if (!formData.name || !formData.daily_salary) {
+      toast.error('Por favor completa nombre y salario');
       return;
     }
     try {
       await axios.put(`${API}/employees/${selectedEmployee.id}`, {
         name: formData.name,
         daily_salary: parseFloat(formData.daily_salary),
-        project_id: formData.project_id,
-        trade: formData.trade
+        project_id: formData.project_id || null,
+        trade: formData.trade || null
       });
       toast.success('Empleado actualizado exitosamente');
       setIsEditModalOpen(false);
