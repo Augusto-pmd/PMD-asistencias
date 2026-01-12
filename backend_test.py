@@ -480,6 +480,7 @@ class PayrollProAPITester:
             # Test all modules
             self.test_employee_crud()
             self.test_contractor_crud()
+            self.test_backward_compatibility()
             self.test_attendance_management()
             self.test_advance_management()
             self.test_payment_calculation()
