@@ -110,30 +110,55 @@ class PayrollProAPITester:
         return True
 
     def test_contractor_crud(self):
-        """Test Contractor CRUD operations"""
+        """Test Contractor CRUD operations with budget tracking"""
         print("\n" + "="*50)
-        print("TESTING CONTRACTOR MANAGEMENT")
+        print("TESTING CONTRACTOR MANAGEMENT WITH BUDGET TRACKING")
         print("="*50)
         
-        # Test Create Contractor
+        # Test Create Contractor with Budget
         contractor_data = {
             "name": "María González Test",
-            "weekly_payment": 15000.0
+            "weekly_payment": 15000.0,
+            "project_name": "Casa Barrio Centro",
+            "budget": 500000.0
         }
-        success, response = self.run_test("Create Contractor", "POST", "contractors", 200, contractor_data)
+        success, response = self.run_test("Create Contractor with Budget", "POST", "contractors", 200, contractor_data)
         if success and 'id' in response:
             contractor_id = response['id']
             self.contractor_ids.append(contractor_id)
             print(f"   Created contractor ID: {contractor_id}")
+            
+            # Verify budget fields
+            if response.get('budget') == 500000.0:
+                print("   ✅ Budget field set correctly")
+            else:
+                print(f"   ❌ Budget field incorrect: {response.get('budget')}")
+                
+            if response.get('total_paid') == 0.0:
+                print("   ✅ Initial total_paid is 0")
+            else:
+                print(f"   ❌ Initial total_paid incorrect: {response.get('total_paid')}")
+                
+            if response.get('remaining_balance') == 500000.0:
+                print("   ✅ Initial remaining_balance equals budget")
+            else:
+                print(f"   ❌ Initial remaining_balance incorrect: {response.get('remaining_balance')}")
+                
+            if response.get('project_name') == "Casa Barrio Centro":
+                print("   ✅ Project name set correctly")
+            else:
+                print(f"   ❌ Project name incorrect: {response.get('project_name')}")
         else:
             return False
 
-        # Test Create Second Contractor
+        # Test Create Second Contractor with Different Budget
         contractor_data2 = {
             "name": "Carlos López Test",
-            "weekly_payment": 20000.0
+            "weekly_payment": 20000.0,
+            "project_name": "Casa Norte",
+            "budget": 300000.0
         }
-        success, response = self.run_test("Create Second Contractor", "POST", "contractors", 200, contractor_data2)
+        success, response = self.run_test("Create Second Contractor with Budget", "POST", "contractors", 200, contractor_data2)
         if success and 'id' in response:
             contractor_id2 = response['id']
             self.contractor_ids.append(contractor_id2)
@@ -143,26 +168,51 @@ class PayrollProAPITester:
         success, response = self.run_test("Get All Contractors", "GET", "contractors", 200)
         if success:
             print(f"   Found {len(response)} contractors")
+            # Verify budget fields are included
+            for contractor in response:
+                if 'budget' in contractor and 'total_paid' in contractor and 'remaining_balance' in contractor:
+                    print(f"   ✅ Budget fields present for {contractor.get('name', 'Unknown')}")
+                else:
+                    print(f"   ❌ Budget fields missing for {contractor.get('name', 'Unknown')}")
 
         # Test Get Single Contractor
         success, response = self.run_test("Get Single Contractor", "GET", f"contractors/{contractor_id}", 200)
         if success:
             print(f"   Contractor name: {response.get('name', 'N/A')}")
             print(f"   Weekly payment: {response.get('weekly_payment', 'N/A')}")
+            print(f"   Project: {response.get('project_name', 'N/A')}")
+            print(f"   Budget: {response.get('budget', 'N/A')}")
+            print(f"   Total paid: {response.get('total_paid', 'N/A')}")
+            print(f"   Remaining balance: {response.get('remaining_balance', 'N/A')}")
 
-        # Test Update Contractor
+        # Test Update Contractor Budget
         update_data = {
             "name": "María González Updated",
-            "weekly_payment": 16000.0
+            "weekly_payment": 16000.0,
+            "project_name": "Casa Barrio Centro Updated",
+            "budget": 600000.0
         }
-        success, response = self.run_test("Update Contractor", "PUT", f"contractors/{contractor_id}", 200, update_data)
+        success, response = self.run_test("Update Contractor Budget", "PUT", f"contractors/{contractor_id}", 200, update_data)
 
         # Test Get Updated Contractor
-        success, response = self.run_test("Verify Contractor Update", "GET", f"contractors/{contractor_id}", 200)
-        if success and response.get('name') == "María González Updated":
-            print("   ✅ Contractor update verified")
-        else:
-            print("   ❌ Contractor update verification failed")
+        success, response = self.run_test("Verify Contractor Budget Update", "GET", f"contractors/{contractor_id}", 200)
+        if success:
+            if response.get('name') == "María González Updated":
+                print("   ✅ Contractor name update verified")
+            else:
+                print("   ❌ Contractor name update verification failed")
+                
+            if response.get('budget') == 600000.0:
+                print("   ✅ Budget update verified")
+            else:
+                print(f"   ❌ Budget update failed: {response.get('budget')}")
+                
+            # Verify remaining_balance recalculated
+            expected_balance = 600000.0 - response.get('total_paid', 0)
+            if response.get('remaining_balance') == expected_balance:
+                print("   ✅ Remaining balance recalculated correctly")
+            else:
+                print(f"   ❌ Remaining balance calculation error: {response.get('remaining_balance')} vs {expected_balance}")
 
         return True
 
