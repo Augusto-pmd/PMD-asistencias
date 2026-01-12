@@ -60,14 +60,14 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
 };
 
-const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd }) => {
+const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd, grossSalary, lateDiscount, advances, netPayment }) => {
   const today = new Date().toLocaleDateString('es-AR', { 
     day: '2-digit', 
     month: '2-digit', 
     year: 'numeric' 
   });
 
-  const amountInWords = numberToWords(amount);
+  const amountInWords = numberToWords(netPayment);
 
   return (
     <div className="receipt-container">
@@ -89,7 +89,7 @@ const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd }) =>
 
           <div className="receipt-line">
             <span className="label">La suma de:</span>
-            <span className="value underline">{formatCurrency(amount)}</span>
+            <span className="value underline">{formatCurrency(netPayment)}</span>
           </div>
 
           <div className="receipt-line">
@@ -100,6 +100,35 @@ const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd }) =>
           <div className="receipt-line">
             <span className="label">En concepto de:</span>
             <span className="value underline">Pago de salarios - Semana del {weekStart} al {weekEnd}</span>
+          </div>
+
+          <div className="receipt-breakdown">
+            <div className="breakdown-title">Liquidación del período:</div>
+            <div className="breakdown-item">
+              <span>Salario bruto:</span>
+              <span>{formatCurrency(grossSalary)}</span>
+            </div>
+            {lateDiscount > 0 && (
+              <div className="breakdown-item deduction">
+                <span>Descuento por tardanzas:</span>
+                <span>- {formatCurrency(lateDiscount)}</span>
+              </div>
+            )}
+            {advances && advances.length > 0 && (
+              <>
+                <div className="breakdown-subtitle">Adelantos descontados:</div>
+                {advances.map((advance, idx) => (
+                  <div key={idx} className="breakdown-item deduction">
+                    <span>• {advance.date} {advance.description ? `(${advance.description})` : ''}</span>
+                    <span>- {formatCurrency(advance.amount)}</span>
+                  </div>
+                ))}
+              </>
+            )}
+            <div className="breakdown-total">
+              <span>Total a cobrar:</span>
+              <span>{formatCurrency(netPayment)}</span>
+            </div>
           </div>
 
           <div className="receipt-line full-line">
