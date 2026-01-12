@@ -1424,6 +1424,74 @@ const PaymentSummary = () => {
     }, 500);
   };
 
+  const generateContractorReceipts = () => {
+    const receipts = paymentData
+      .filter(p => p.type === 'contractor' && p.netPayment > 0)
+      .map((payment, index) => ({
+        receiptNumber: `${new Date().getFullYear()}-C-${String(index + 1).padStart(4, '0')}`,
+        employeeName: payment.person.name,
+        amount: payment.netPayment,
+        grossSalary: payment.totalSalary,
+        lateDiscount: 0,
+        advances: [],
+        netPayment: payment.netPayment,
+        isContractor: true,
+        project: payment.project
+      }));
+    
+    setReceiptsData(receipts);
+    setShowReceipts(true);
+    
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  };
+
+  const generateAllReceipts = () => {
+    const employeeReceipts = paymentData
+      .filter(p => p.type === 'employee' && p.netPayment > 0)
+      .map((payment, index) => {
+        const employeeAdvances = advances
+          .filter(a => a.employee_id === payment.person.id && a.week_start_date === weekStart)
+          .map(a => ({
+            date: new Date(a.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+            amount: a.amount,
+            description: a.description || ''
+          }));
+
+        return {
+          receiptNumber: `${new Date().getFullYear()}-${String(index + 1).padStart(4, '0')}`,
+          employeeName: payment.person.name,
+          amount: payment.netPayment,
+          grossSalary: payment.grossSalary || payment.totalSalary,
+          lateDiscount: payment.lateDiscount || 0,
+          advances: employeeAdvances,
+          netPayment: payment.netPayment
+        };
+      });
+
+    const contractorReceipts = paymentData
+      .filter(p => p.type === 'contractor' && p.netPayment > 0)
+      .map((payment, index) => ({
+        receiptNumber: `${new Date().getFullYear()}-C-${String(index + 1).padStart(4, '0')}`,
+        employeeName: payment.person.name,
+        amount: payment.netPayment,
+        grossSalary: payment.totalSalary,
+        lateDiscount: 0,
+        advances: [],
+        netPayment: payment.netPayment,
+        isContractor: true,
+        project: payment.project
+      }));
+    
+    setReceiptsData([...employeeReceipts, ...contractorReceipts]);
+    setShowReceipts(true);
+    
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  };
+
   return (
     <div className="space-y-6" data-testid="payment-summary">
       {showReceipts ? (
