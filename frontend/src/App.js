@@ -691,6 +691,48 @@ const ContractorManagement = () => {
     setIsEditModalOpen(true);
   };
 
+  const openCertificationsModal = async (contractor) => {
+    setSelectedContractor(contractor);
+    await fetchCertifications(contractor.id);
+    setIsCertModalOpen(true);
+  };
+
+  const handleAddCertification = async () => {
+    if (!certFormData.amount || !certFormData.week_start_date) {
+      toast.error('Por favor completa monto y fecha');
+      return;
+    }
+    try {
+      await axios.post(`${API}/certifications`, {
+        contractor_id: selectedContractor.id,
+        amount: parseFloat(certFormData.amount),
+        week_start_date: certFormData.week_start_date,
+        description: certFormData.description
+      });
+      toast.success('Certificación registrada exitosamente');
+      setCertFormData({ amount: '', week_start_date: '', description: '' });
+      setIsAddCertModalOpen(false);
+      await fetchCertifications(selectedContractor.id);
+      await fetchContractors();
+    } catch (error) {
+      console.error('Error adding certification:', error);
+      toast.error('Error al registrar certificación');
+    }
+  };
+
+  const handleDeleteCertification = async (certId) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta certificación?')) return;
+    try {
+      await axios.delete(`${API}/certifications/${certId}`);
+      toast.success('Certificación eliminada exitosamente');
+      await fetchCertifications(selectedContractor.id);
+      await fetchContractors();
+    } catch (error) {
+      console.error('Error deleting certification:', error);
+      toast.error('Error al eliminar certificación');
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
   }
