@@ -448,7 +448,13 @@ async def get_dashboard_stats():
     for employee in active_employees:
         employee_attendance = [a for a in attendance_records if a['employee_id'] == employee['id']]
         days_worked = sum(1 for a in employee_attendance if a['status'] in ['present', 'late'])
-        total_payment += days_worked * employee['daily_salary']
+        
+        # Calcular descuento por horas tarde
+        total_late_hours = sum(a.get('late_hours', 0) for a in employee_attendance if a['status'] == 'late')
+        hourly_rate = employee['daily_salary'] / 8
+        late_discount = total_late_hours * hourly_rate
+        
+        total_payment += (days_worked * employee['daily_salary']) - late_discount
     
     contractors_payment = sum(c['weekly_payment'] for c in active_contractors)
     total_advances = sum(a['amount'] for a in advances_records)
