@@ -119,9 +119,13 @@ class PaymentCalculation(BaseModel):
 class DashboardStats(BaseModel):
     total_employees: int
     active_employees: int
+    total_contractors: int
+    active_contractors: int
     total_payment_this_week: float
+    contractors_payment_this_week: float
     total_advances_this_week: float
     net_payment_this_week: float
+    total_to_pay_friday: float
 
 
 @api_router.get("/")
