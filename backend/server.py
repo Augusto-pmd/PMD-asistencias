@@ -217,7 +217,13 @@ async def create_contractor(contractor: ContractorCreate):
 async def get_contractors():
     contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
     for contractor in contractors:
-        contractor['remaining_balance'] = contractor['budget'] - contractor.get('total_paid', 0)
+        budget = contractor.get('budget', 0)
+        total_paid = contractor.get('total_paid', 0)
+        contractor['budget'] = budget
+        contractor['total_paid'] = total_paid
+        contractor['remaining_balance'] = budget - total_paid
+        if 'project_name' not in contractor:
+            contractor['project_name'] = 'Sin asignar'
     return contractors
 
 
