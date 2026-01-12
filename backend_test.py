@@ -692,6 +692,7 @@ class PayrollProAPITester:
             self.test_contractor_crud()
             self.test_backward_compatibility()
             self.test_attendance_management()
+            self.test_late_hours_discount_calculation()
             self.test_advance_management()
             self.test_payment_calculation()
             self.test_dashboard_stats()
