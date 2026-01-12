@@ -477,6 +477,8 @@ const EmployeeManagement = () => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Obra</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rubro</th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Salario Diario</th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
@@ -485,7 +487,7 @@ const EmployeeManagement = () => {
             <tbody>
               {employees.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-12 text-slate-400">
+                  <td colSpan="6" className="text-center py-12 text-slate-400">
                     No hay empleados registrados
                   </td>
                 </tr>
@@ -493,6 +495,8 @@ const EmployeeManagement = () => {
                 employees.map((employee) => (
                   <tr key={employee.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`employee-row-${employee.id}`}>
                     <td className="py-4 px-6 text-sm text-slate-700">{employee.name}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700">{getProjectName(employee.project_id)}</td>
+                    <td className="py-4 px-6 text-sm text-slate-700">{employee.trade || 'Sin asignar'}</td>
                     <td className="py-4 px-6 text-sm text-slate-700 font-mono-numbers">
                       {formatCurrency(employee.daily_salary)}
                     </td>
