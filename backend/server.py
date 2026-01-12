@@ -316,12 +316,18 @@ async def create_attendance(attendance: AttendanceCreate):
 @api_router.get("/attendance", response_model=List[Attendance])
 async def get_attendance():
     attendance = await db.attendance.find({}, {"_id": 0}).to_list(5000)
+    for record in attendance:
+        if 'late_hours' not in record:
+            record['late_hours'] = 0.0
     return attendance
 
 
 @api_router.get("/attendance/week/{week_start}", response_model=List[Attendance])
 async def get_week_attendance(week_start: str):
     attendance = await db.attendance.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
+    for record in attendance:
+        if 'late_hours' not in record:
+            record['late_hours'] = 0.0
     return attendance
 
 
