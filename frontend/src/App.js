@@ -416,7 +416,7 @@ const EmployeeManagement = () => {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="name">Nombre Completo</Label>
+                <Label htmlFor="name">Nombre Completo *</Label>
                 <Input
                   id="name"
                   data-testid="employee-name-input"
@@ -426,7 +426,33 @@ const EmployeeManagement = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="salary">Salario Diario</Label>
+                <Label htmlFor="project">Obra *</Label>
+                <Select value={formData.project_id} onValueChange={(value) => setFormData({ ...formData, project_id: value })}>
+                  <SelectTrigger data-testid="employee-project-select">
+                    <SelectValue placeholder="Selecciona una obra" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.filter(p => p.is_active).map(project => (
+                      <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="trade">Rubro *</Label>
+                <Select value={formData.trade} onValueChange={(value) => setFormData({ ...formData, trade: value })}>
+                  <SelectTrigger data-testid="employee-trade-select">
+                    <SelectValue placeholder="Selecciona un rubro" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRADES.map(trade => (
+                      <SelectItem key={trade} value={trade}>{trade}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="salary">Salario Diario *</Label>
                 <Input
                   id="salary"
                   data-testid="employee-salary-input"
