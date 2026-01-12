@@ -1527,6 +1527,8 @@ const PaymentSummary = () => {
           </table>
         </div>
       </Card>
+      </>
+      )}
     </div>
   );
 };
