@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-do
 import axios from "axios";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Users, Calendar, DollarSign, History, LayoutDashboard, Plus, Edit2, Trash2, Check, X, Clock, Briefcase } from "lucide-react";
+import { Users, Calendar, DollarSign, History, LayoutDashboard, Plus, Edit2, Trash2, Check, X, Clock, Briefcase, Menu, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
