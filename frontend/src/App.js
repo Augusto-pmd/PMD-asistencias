@@ -1365,6 +1365,24 @@ const PaymentSummary = () => {
 
   const totalToPay = paymentData.reduce((sum, p) => sum + p.netPayment, 0);
 
+  const generateReceipts = () => {
+    const receipts = paymentData
+      .filter(p => p.type === 'employee' && p.netPayment > 0)
+      .map((payment, index) => ({
+        receiptNumber: `${new Date().getFullYear()}-${String(index + 1).padStart(4, '0')}`,
+        employeeName: payment.person.name,
+        amount: payment.netPayment
+      }));
+    
+    setReceiptsData(receipts);
+    setShowReceipts(true);
+    
+    // Imprimir automáticamente después de un pequeño delay
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  };
+
   return (
     <div className="space-y-6" data-testid="payment-summary">
       <div className="flex justify-between items-center">
