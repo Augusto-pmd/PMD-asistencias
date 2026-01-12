@@ -78,6 +78,7 @@ class Attendance(BaseModel):
     employee_id: str
     date: str
     status: str
+    late_hours: float = 0.0
     week_start_date: str
 
 
@@ -85,6 +86,7 @@ class AttendanceCreate(BaseModel):
     employee_id: str
     date: str
     status: str
+    late_hours: float = 0.0
     week_start_date: str
 
 
