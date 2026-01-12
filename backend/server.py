@@ -42,6 +42,30 @@ class EmployeeUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
+class Project(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str
+    name: str
+    description: Optional[str] = ""
+    start_date: str
+    is_active: bool = True
+    created_at: str
+
+
+class ProjectCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    start_date: str
+
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
 class Contractor(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
