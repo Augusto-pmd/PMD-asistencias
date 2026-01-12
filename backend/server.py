@@ -139,6 +139,24 @@ class AdvanceCreate(BaseModel):
     week_start_date: str
 
 
+class ContractorCertification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str
+    contractor_id: str
+    week_start_date: str
+    amount: float
+    description: Optional[str] = ""
+    created_at: str
+
+
+class ContractorCertificationCreate(BaseModel):
+    contractor_id: str
+    week_start_date: str
+    amount: float
+    description: Optional[str] = ""
+
+
 class PaymentHistory(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
