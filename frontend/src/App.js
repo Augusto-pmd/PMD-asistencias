@@ -1106,13 +1106,19 @@ const PaymentSummary = () => {
     
     // Agregar contratistas
     contrs.forEach(contractor => {
+      const afterPayment = contractor.remaining_balance - contractor.weekly_payment;
       payments.push({
         type: 'contractor',
         person: contractor,
         daysWorked: 'Semanal',
         totalSalary: contractor.weekly_payment,
         totalAdvances: 0,
-        netPayment: contractor.weekly_payment
+        netPayment: contractor.weekly_payment,
+        project: contractor.project_name,
+        budget: contractor.budget,
+        totalPaid: contractor.total_paid || 0,
+        remainingBalance: contractor.remaining_balance,
+        afterPaymentBalance: afterPayment
       });
     });
     
