@@ -9,6 +9,7 @@ class PayrollProAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.employee_ids = []
+        self.contractor_ids = []
         self.advance_ids = []
         self.current_week_start = self.get_current_week_start()
 
