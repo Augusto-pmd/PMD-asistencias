@@ -365,6 +365,8 @@ class PayrollProAPITester:
         if success:
             print(f"   Found {len(response)} payment history records")
 
+        return True
+
     def test_backward_compatibility(self):
         """Test backward compatibility with old contractors without budget fields"""
         print("\n" + "="*50)
