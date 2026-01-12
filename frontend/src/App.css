@@ -115,3 +115,20 @@
   box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.1), 0 4px 6px -4px rgb(37 99 235 / 0.1);
   transform: translateY(-2px);
 }
+
+/* Mobile responsive styles */
+@media (max-width: 640px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 800px;
+  }
+  
+  .btn-primary, .btn-secondary {
+    font-size: 0.8125rem;
+    padding: 0.5rem 1rem;
+  }
+}
