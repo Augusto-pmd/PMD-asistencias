@@ -1518,9 +1518,9 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Toaster position="top-right" richColors />
-        <div className="flex">
+        <div className="flex min-h-screen">
           <Sidebar />
-          <div className="flex-1 p-8 lg:p-12 bg-slate-50 min-h-screen">
+          <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen pt-20 lg:pt-8">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/employees" element={<EmployeeManagement />} />
