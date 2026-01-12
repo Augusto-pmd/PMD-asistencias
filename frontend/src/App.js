@@ -823,11 +823,11 @@ const AttendanceSheet = () => {
         </div>
       </Card>
 
-      <Card className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+      <Card className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
         <div className="flex items-center gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 flex items-center justify-center bg-emerald-100 rounded">
-              <Check className="w-5 h-5 text-emerald-700" />
+            <div className="w-8 h-8 flex items-center justify-center bg-blue-100 rounded">
+              <Check className="w-5 h-5 text-blue-700" />
             </div>
             <span className="text-slate-700">Presente</span>
           </div>
