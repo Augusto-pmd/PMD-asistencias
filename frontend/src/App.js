@@ -931,6 +931,158 @@ const ContractorManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Historial de Certificaciones */}
+      <Dialog open={isCertModalOpen} onOpenChange={setIsCertModalOpen}>
+        <DialogContent className="max-w-3xl" data-testid="certifications-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Historial de Certificaciones - {selectedContractor?.name}</span>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedContractor && (
+            <div className="space-y-4">
+              {/* Resumen del contratista */}
+              <div className="grid grid-cols-3 gap-4 p-4 bg-blue-50 rounded-lg">
+                <div>
+                  <p className="text-xs text-slate-500">Obra</p>
+                  <p className="font-semibold text-slate-900">{selectedContractor.project_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Total Pagado</p>
+                  <p className="font-semibold text-blue-700 font-mono-numbers">{formatCurrency(selectedContractor.total_paid || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Saldo Restante</p>
+                  <p className={`font-semibold font-mono-numbers ${selectedContractor.remaining_balance < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    {formatCurrency(selectedContractor.remaining_balance)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Barra de progreso */}
+              <div className="px-4">
+                <div className="flex justify-between text-xs text-slate-500 mb-1">
+                  <span>Presupuesto consumido</span>
+                  <span>{selectedContractor.budget > 0 ? ((selectedContractor.total_paid / selectedContractor.budget) * 100).toFixed(1) : 0}%</span>
+                </div>
+                <ProgressBar percentage={selectedContractor.budget > 0 ? (selectedContractor.total_paid / selectedContractor.budget) * 100 : 0} showLabel={false} />
+              </div>
+
+              {/* Botón agregar certificación */}
+              <div className="flex justify-end">
+                <Button className="btn-primary" onClick={() => setIsAddCertModalOpen(true)} data-testid="add-certification-btn">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nueva Certificación
+                </Button>
+              </div>
+
+              {/* Tabla de certificaciones */}
+              <div className="max-h-64 overflow-y-auto border rounded-lg">
+                <table className="w-full">
+                  <thead className="bg-slate-50 sticky top-0">
+                    <tr>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Semana</th>
+                      <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Monto</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Descripción</th>
+                      <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {certifications.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="text-center py-8 text-slate-400">
+                          No hay certificaciones registradas
+                        </td>
+                      </tr>
+                    ) : (
+                      certifications.map((cert) => (
+                        <tr key={cert.id} className="border-b border-slate-100 hover:bg-slate-50/50" data-testid={`certification-row-${cert.id}`}>
+                          <td className="py-3 px-4 text-sm text-slate-700">
+                            {new Date(cert.week_start_date).toLocaleDateString('es-AR')}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-right font-semibold text-emerald-600 font-mono-numbers">
+                            {formatCurrency(cert.amount)}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-600">
+                            {cert.description || '-'}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteCertification(cert.id)} data-testid={`delete-cert-${cert.id}`}>
+                              <Trash2 className="w-4 h-4 text-rose-500" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Total */}
+              {certifications.length > 0 && (
+                <div className="flex justify-between items-center p-4 bg-slate-100 rounded-lg">
+                  <span className="font-semibold text-slate-700">Total Certificaciones:</span>
+                  <span className="text-xl font-bold text-blue-700 font-mono-numbers">
+                    {formatCurrency(certifications.reduce((sum, c) => sum + c.amount, 0))}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCertModalOpen(false)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para agregar certificación */}
+      <Dialog open={isAddCertModalOpen} onOpenChange={setIsAddCertModalOpen}>
+        <DialogContent data-testid="add-certification-dialog">
+          <DialogHeader>
+            <DialogTitle>Nueva Certificación Semanal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="cert-amount">Monto a Certificar *</Label>
+              <Input
+                id="cert-amount"
+                data-testid="cert-amount-input"
+                type="number"
+                value={certFormData.amount}
+                onChange={(e) => setCertFormData({ ...certFormData, amount: e.target.value })}
+                placeholder="Ej: 150000"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cert-week">Semana (Fecha de inicio) *</Label>
+              <Input
+                id="cert-week"
+                data-testid="cert-week-input"
+                type="date"
+                value={certFormData.week_start_date}
+                onChange={(e) => setCertFormData({ ...certFormData, week_start_date: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="cert-description">Descripción (opcional)</Label>
+              <Input
+                id="cert-description"
+                data-testid="cert-description-input"
+                value={certFormData.description}
+                onChange={(e) => setCertFormData({ ...certFormData, description: e.target.value })}
+                placeholder="Ej: Avance de mampostería 50%"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddCertModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAddCertification} data-testid="submit-certification-btn">Registrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
