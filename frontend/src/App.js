@@ -16,6 +16,14 @@ import { Badge } from "@/components/ui/badge";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const TRADES = [
+  'Albañilería',
+  'Steel Framing',
+  'Pintura',
+  'Plomería',
+  'Electricidad'
+];
+
 function getWeekDates(weekStart) {
   const dates = [];
   const start = new Date(weekStart);
