@@ -365,9 +365,58 @@ class PayrollProAPITester:
         if success:
             print(f"   Found {len(response)} payment history records")
 
+    def test_backward_compatibility(self):
+        """Test backward compatibility with old contractors without budget fields"""
+        print("\n" + "="*50)
+        print("TESTING BACKWARD COMPATIBILITY")
+        print("="*50)
+        
+        # Create contractor without budget fields (simulating old data)
+        contractor_data = {
+            "name": "Old Contractor Test",
+            "weekly_payment": 10000.0
+        }
+        success, response = self.run_test("Create Old-Style Contractor", "POST", "contractors", 200, contractor_data)
+        if success and 'id' in response:
+            contractor_id = response['id']
+            self.contractor_ids.append(contractor_id)
+            print(f"   Created old-style contractor ID: {contractor_id}")
+            
+            # Check if default values are applied
+            if response.get('project_name') == 'Sin asignar' or response.get('project_name') is None:
+                print("   ✅ Default project_name handled correctly")
+            else:
+                print(f"   ❌ Project name should be 'Sin asignar', got: {response.get('project_name')}")
+                
+            if response.get('budget', 0) == 0:
+                print("   ✅ Default budget is 0")
+            else:
+                print(f"   ❌ Default budget should be 0, got: {response.get('budget')}")
+                
+            if response.get('total_paid', 0) == 0:
+                print("   ✅ Default total_paid is 0")
+            else:
+                print(f"   ❌ Default total_paid should be 0, got: {response.get('total_paid')}")
+                
+            if response.get('remaining_balance', 0) == 0:
+                print("   ✅ Default remaining_balance is 0")
+            else:
+                print(f"   ❌ Default remaining_balance should be 0, got: {response.get('remaining_balance')}")
+        
+        # Test that old contractors appear in list without errors
+        success, response = self.run_test("Get All Contractors (with old data)", "GET", "contractors", 200)
+        if success:
+            old_contractor = next((c for c in response if c.get('name') == 'Old Contractor Test'), None)
+            if old_contractor:
+                print("   ✅ Old contractor appears in list")
+                if old_contractor.get('project_name') == 'Sin asignar':
+                    print("   ✅ Old contractor shows 'Sin asignar' for project")
+                else:
+                    print(f"   ❌ Old contractor project name: {old_contractor.get('project_name')}")
+            else:
+                print("   ❌ Old contractor not found in list")
+        
         return True
-
-    def test_dashboard_stats(self):
         """Test Dashboard statistics"""
         print("\n" + "="*50)
         print("TESTING DASHBOARD STATISTICS")
