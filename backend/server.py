@@ -48,6 +48,10 @@ class Contractor(BaseModel):
     id: str
     name: str
     weekly_payment: float
+    project_name: str
+    budget: float
+    total_paid: float = 0.0
+    remaining_balance: float = 0.0
     created_at: str
     is_active: bool = True
 
@@ -55,11 +59,15 @@ class Contractor(BaseModel):
 class ContractorCreate(BaseModel):
     name: str
     weekly_payment: float
+    project_name: str
+    budget: float
 
 
 class ContractorUpdate(BaseModel):
     name: Optional[str] = None
     weekly_payment: Optional[float] = None
+    project_name: Optional[str] = None
+    budget: Optional[float] = None
     is_active: Optional[bool] = None
 
 
