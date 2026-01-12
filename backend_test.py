@@ -305,6 +305,10 @@ class PayrollProAPITester:
         for advance_id in self.advance_ids:
             success, _ = self.run_test(f"Delete Advance {advance_id}", "DELETE", f"advances/{advance_id}", 200)
 
+        # Delete test contractors
+        for contractor_id in self.contractor_ids:
+            success, _ = self.run_test(f"Delete Contractor {contractor_id}", "DELETE", f"contractors/{contractor_id}", 200)
+
         # Delete test employees
         for employee_id in self.employee_ids:
             success, _ = self.run_test(f"Delete Employee {employee_id}", "DELETE", f"employees/{employee_id}", 200)
