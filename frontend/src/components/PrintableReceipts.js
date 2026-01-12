@@ -60,7 +60,7 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
 };
 
-const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd, grossSalary, lateDiscount, advances, netPayment }) => {
+const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd, grossSalary, lateDiscount, advances, netPayment, isContractor, project }) => {
   const today = new Date().toLocaleDateString('es-AR', { 
     day: '2-digit', 
     month: '2-digit', 
@@ -68,6 +68,10 @@ const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd, gros
   });
 
   const amountInWords = numberToWords(netPayment);
+  const personType = isContractor ? 'contratista' : 'empleado';
+  const conceptText = isContractor 
+    ? `Certificación semanal - Obra: ${project || 'Sin asignar'} - Semana del ${weekStart} al ${weekEnd}`
+    : `Pago de salarios - Semana del ${weekStart} al ${weekEnd}`;
 
   return (
     <div className="receipt-container">
@@ -99,22 +103,22 @@ const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd, gros
 
           <div className="receipt-line">
             <span className="label">En concepto de:</span>
-            <span className="value underline">Pago de salarios - Semana del {weekStart} al {weekEnd}</span>
+            <span className="value underline">{conceptText}</span>
           </div>
 
           <div className="receipt-breakdown">
-            <div className="breakdown-title">Liquidación del período:</div>
+            <div className="breakdown-title">{isContractor ? 'Detalle de certificación:' : 'Liquidación del período:'}</div>
             <div className="breakdown-item">
-              <span>Salario bruto:</span>
+              <span>{isContractor ? 'Monto certificado:' : 'Salario bruto:'}</span>
               <span>{formatCurrency(grossSalary)}</span>
             </div>
-            {lateDiscount > 0 && (
+            {!isContractor && lateDiscount > 0 && (
               <div className="breakdown-item deduction">
                 <span>Descuento por tardanzas:</span>
                 <span>- {formatCurrency(lateDiscount)}</span>
               </div>
             )}
-            {advances && advances.length > 0 && (
+            {!isContractor && advances && advances.length > 0 && (
               <>
                 <div className="breakdown-subtitle">Adelantos descontados:</div>
                 {advances.map((advance, idx) => (
@@ -140,7 +144,7 @@ const Receipt = ({ receiptNumber, employeeName, amount, weekStart, weekEnd, gros
         <div className="receipt-footer">
           <div className="signature-section">
             <div className="signature-line">_____________________________</div>
-            <div className="signature-label">Firma del empleado</div>
+            <div className="signature-label">Firma del {personType}</div>
           </div>
 
           <div className="signature-section">
