@@ -527,6 +527,75 @@ async def calculate_payments(calculation: PaymentCalculation):
     }
 
 
+# Contractor Certifications endpoints
+@api_router.post("/certifications", response_model=ContractorCertification)
+async def create_certification(certification: ContractorCertificationCreate):
+    from uuid import uuid4
+    
+    # Verify contractor exists
+    contractor = await db.contractors.find_one({"id": certification.contractor_id}, {"_id": 0})
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    
+    certification_dict = certification.model_dump()
+    certification_obj = ContractorCertification(
+        id=str(uuid4()),
+        contractor_id=certification_dict['contractor_id'],
+        week_start_date=certification_dict['week_start_date'],
+        amount=certification_dict['amount'],
+        description=certification_dict.get('description', ''),
+        created_at=datetime.now(timezone.utc).isoformat()
+    )
+    doc = certification_obj.model_dump()
+    await db.certifications.insert_one(doc)
+    
+    # Update contractor's total_paid
+    new_total_paid = contractor.get('total_paid', 0) + certification_dict['amount']
+    await db.contractors.update_one(
+        {"id": certification.contractor_id},
+        {"$set": {"total_paid": new_total_paid}}
+    )
+    
+    return certification_obj
+
+
+@api_router.get("/certifications", response_model=List[ContractorCertification])
+async def get_all_certifications():
+    certifications = await db.certifications.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
+    return certifications
+
+
+@api_router.get("/certifications/contractor/{contractor_id}", response_model=List[ContractorCertification])
+async def get_contractor_certifications(contractor_id: str):
+    certifications = await db.certifications.find(
+        {"contractor_id": contractor_id}, 
+        {"_id": 0}
+    ).sort("week_start_date", -1).to_list(1000)
+    return certifications
+
+
+@api_router.delete("/certifications/{certification_id}")
+async def delete_certification(certification_id: str):
+    # Get certification to know the amount to subtract
+    certification = await db.certifications.find_one({"id": certification_id}, {"_id": 0})
+    if not certification:
+        raise HTTPException(status_code=404, detail="Certification not found")
+    
+    # Update contractor's total_paid
+    contractor = await db.contractors.find_one({"id": certification['contractor_id']}, {"_id": 0})
+    if contractor:
+        new_total_paid = max(0, contractor.get('total_paid', 0) - certification['amount'])
+        await db.contractors.update_one(
+            {"id": certification['contractor_id']},
+            {"$set": {"total_paid": new_total_paid}}
+        )
+    
+    result = await db.certifications.delete_one({"id": certification_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Certification not found")
+    return {"message": "Certification deleted successfully"}
+
+
 @api_router.get("/payments/history", response_model=List[PaymentHistory])
 async def get_payment_history():
     payments = await db.payment_history.find({}, {"_id": 0}).sort("paid_at", -1).to_list(1000)
