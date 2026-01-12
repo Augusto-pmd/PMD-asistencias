@@ -1366,8 +1366,8 @@ const Sidebar = () => {
               to={item.path}
               className={`flex items-center gap-3 px-3 py-3 mb-1 rounded-lg transition-all ${
                 isActive
-                  ? 'bg-indigo-50 text-indigo-600 font-medium'
-                  : 'text-slate-600 hover:bg-slate-50'
+                  ? 'bg-blue-50 text-blue-700 font-medium'
+                  : 'text-slate-600 hover:bg-blue-50/50'
               }`}
               data-testid={`nav-${item.path}`}
             >
