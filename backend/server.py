@@ -341,6 +341,7 @@ async def calculate_payments(calculation: PaymentCalculation):
     week_start = calculation.week_start_date
     
     employees = await db.employees.find({"is_active": True}, {"_id": 0}).to_list(1000)
+    contractors = await db.contractors.find({"is_active": True}, {"_id": 0}).to_list(1000)
     attendance_records = await db.attendance.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
     advances_records = await db.advances.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
     
@@ -371,7 +372,18 @@ async def calculate_payments(calculation: PaymentCalculation):
         await db.payment_history.insert_one(doc)
         payment_records.append(doc)
     
-    return {"message": "Payments calculated successfully", "count": len(payment_records)}
+    for contractor in contractors:
+        new_total_paid = contractor.get('total_paid', 0) + contractor['weekly_payment']
+        await db.contractors.update_one(
+            {"id": contractor['id']},
+            {"$set": {"total_paid": new_total_paid}}
+        )
+    
+    return {
+        "message": "Payments calculated successfully", 
+        "count": len(payment_records),
+        "contractors_updated": len(contractors)
+    }
 
 
 @api_router.get("/payments/history", response_model=List[PaymentHistory])
