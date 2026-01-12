@@ -372,6 +372,9 @@ async def get_dashboard_stats():
     all_employees = await db.employees.find({}, {"_id": 0}).to_list(1000)
     active_employees = [e for e in all_employees if e.get('is_active', True)]
     
+    all_contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
+    active_contractors = [c for c in all_contractors if c.get('is_active', True)]
+    
     attendance_records = await db.attendance.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
     advances_records = await db.advances.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
     
@@ -381,14 +384,19 @@ async def get_dashboard_stats():
         days_worked = sum(1 for a in employee_attendance if a['status'] in ['present', 'late'])
         total_payment += days_worked * employee['daily_salary']
     
+    contractors_payment = sum(c['weekly_payment'] for c in active_contractors)
     total_advances = sum(a['amount'] for a in advances_records)
     
     stats = DashboardStats(
         total_employees=len(all_employees),
         active_employees=len(active_employees),
+        total_contractors=len(all_contractors),
+        active_contractors=len(active_contractors),
         total_payment_this_week=total_payment,
+        contractors_payment_this_week=contractors_payment,
         total_advances_this_week=total_advances,
-        net_payment_this_week=total_payment - total_advances
+        net_payment_this_week=total_payment - total_advances,
+        total_to_pay_friday=total_payment + contractors_payment - total_advances
     )
     
     return stats
