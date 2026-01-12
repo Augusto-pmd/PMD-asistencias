@@ -71,10 +71,12 @@ const ProgressBar = ({ percentage, showLabel = true }) => {
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
+  const [contractors, setContractors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
+    fetchContractors();
   }, []);
 
   const fetchStats = async () => {
@@ -89,6 +91,15 @@ const Dashboard = () => {
     }
   };
 
+  const fetchContractors = async () => {
+    try {
+      const response = await axios.get(`${API}/contractors`);
+      setContractors(response.data);
+    } catch (error) {
+      console.error('Error fetching contractors:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -96,6 +107,11 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const contractorsNearBudget = contractors.filter(c => {
+    const percentage = c.budget > 0 ? (c.total_paid / c.budget) * 100 : 0;
+    return percentage >= 80 && c.is_active;
+  });
 
   return (
     <div className="space-y-4 sm:space-y-6" data-testid="dashboard">
