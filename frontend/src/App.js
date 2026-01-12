@@ -1578,6 +1578,132 @@ const PaymentHistoryPage = () => {
   );
 };
 
+const PaymentsByProject = () => {
+  const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
+  const [paymentsByProject, setPaymentsByProject] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [weekStart]);
+
+  const fetchPayments = async () => {
+    try {
+      const response = await axios.get(`${API}/payments/by-project/${weekStart}`);
+      setPaymentsByProject(response.data.projects || []);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching payments by project:', error);
+      toast.error('Error al cargar pagos por obra');
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-96"><div className="text-slate-500">Cargando...</div></div>;
+  }
+
+  const grandTotal = paymentsByProject.reduce((sum, project) => sum + project.total, 0);
+
+  return (
+    <div className="space-y-4 sm:space-y-6" data-testid="payments-by-project">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">Pagos por Obra</h1>
+          <p className="text-sm sm:text-base text-slate-500">Agrupación por proyecto y rubro</p>
+        </div>
+        <Input
+          type="date"
+          data-testid="project-week-start-input"
+          value={weekStart}
+          onChange={(e) => setWeekStart(e.target.value)}
+          className="w-full sm:w-48"
+        />
+      </div>
+
+      <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl shadow-sm">
+        <div className="text-center">
+          <p className="text-xs sm:text-sm font-medium text-blue-700 mb-2">Total General a Pagar</p>
+          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 font-mono-numbers">
+            {formatCurrency(grandTotal)}
+          </p>
+        </div>
+      </Card>
+
+      <div className="space-y-4">
+        {paymentsByProject.length === 0 ? (
+          <Card className="p-8 text-center text-slate-400">
+            No hay datos para mostrar
+          </Card>
+        ) : (
+          paymentsByProject.map((project) => (
+            <Card key={project.project_id} className="bg-white border border-blue-200 rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-blue-50 px-4 sm:px-6 py-4 border-b border-blue-200">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">{project.project_name}</h2>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">Total Obra</p>
+                    <p className="text-xl sm:text-2xl font-bold text-blue-700 font-mono-numbers">
+                      {formatCurrency(project.total)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-6 space-y-4">
+                {Object.entries(project.trades).map(([trade, data]) => (
+                  <div key={trade} className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="bg-slate-50 px-4 py-3 flex justify-between items-center">
+                      <h3 className="font-semibold text-slate-700">{trade}</h3>
+                      <p className="font-bold text-slate-900 font-mono-numbers">
+                        {formatCurrency(data.total)}
+                      </p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-50 border-t border-slate-200">
+                          <tr>
+                            <th className="text-left py-2 px-4 text-xs font-semibold text-slate-500">Empleado</th>
+                            <th className="text-center py-2 px-4 text-xs font-semibold text-slate-500">Días</th>
+                            <th className="text-right py-2 px-4 text-xs font-semibold text-slate-500">Salario</th>
+                            <th className="text-right py-2 px-4 text-xs font-semibold text-slate-500">Desc. Tarde</th>
+                            <th className="text-right py-2 px-4 text-xs font-semibold text-slate-500">Adelantos</th>
+                            <th className="text-right py-2 px-4 text-xs font-semibold text-slate-500">Neto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.employees.map((emp, idx) => (
+                            <tr key={idx} className="border-t border-slate-100">
+                              <td className="py-2 px-4 text-sm text-slate-700">{emp.name}</td>
+                              <td className="py-2 px-4 text-sm text-slate-700 text-center">{emp.days_worked}</td>
+                              <td className="py-2 px-4 text-sm text-slate-700 text-right font-mono-numbers">
+                                {formatCurrency(emp.gross_salary)}
+                              </td>
+                              <td className="py-2 px-4 text-sm text-amber-600 text-right font-mono-numbers">
+                                {emp.late_discount > 0 ? `-${formatCurrency(emp.late_discount)}` : '-'}
+                              </td>
+                              <td className="py-2 px-4 text-sm text-rose-600 text-right font-mono-numbers">
+                                -{formatCurrency(emp.advances)}
+                              </td>
+                              <td className="py-2 px-4 text-sm text-emerald-600 text-right font-bold font-mono-numbers">
+                                {formatCurrency(emp.net_payment)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Sidebar = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
