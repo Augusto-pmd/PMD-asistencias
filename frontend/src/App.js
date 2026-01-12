@@ -1665,11 +1665,13 @@ function App() {
           <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen pt-20 lg:pt-8">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/projects" element={<ProjectManagement />} />
               <Route path="/employees" element={<EmployeeManagement />} />
               <Route path="/contractors" element={<ContractorManagement />} />
               <Route path="/attendance" element={<AttendanceSheet />} />
               <Route path="/advances" element={<AdvanceManagement />} />
               <Route path="/payments" element={<PaymentSummary />} />
+              <Route path="/payments-by-project" element={<PaymentsByProject />} />
               <Route path="/history" element={<PaymentHistoryPage />} />
             </Routes>
           </div>
