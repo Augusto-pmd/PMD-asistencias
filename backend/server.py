@@ -384,10 +384,15 @@ async def calculate_payments(calculation: PaymentCalculation):
         employee_attendance = [a for a in attendance_records if a['employee_id'] == employee['id']]
         days_worked = sum(1 for a in employee_attendance if a['status'] in ['present', 'late'])
         
+        # Calcular descuento por horas tarde
+        total_late_hours = sum(a.get('late_hours', 0) for a in employee_attendance if a['status'] == 'late')
+        hourly_rate = employee['daily_salary'] / 8  # Jornada de 8 horas
+        late_discount = total_late_hours * hourly_rate
+        
         employee_advances = [a for a in advances_records if a['employee_id'] == employee['id']]
         total_advances = sum(a['amount'] for a in employee_advances)
         
-        total_salary = days_worked * employee['daily_salary']
+        total_salary = (days_worked * employee['daily_salary']) - late_discount
         net_payment = total_salary - total_advances
         
         payment_obj = PaymentHistory(
