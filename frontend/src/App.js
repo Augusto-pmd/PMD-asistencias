@@ -39,6 +39,36 @@ function formatCurrency(amount) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
 }
 
+const ProgressBar = ({ percentage, showLabel = true }) => {
+  const getColor = () => {
+    if (percentage >= 95) return 'bg-rose-500';
+    if (percentage >= 80) return 'bg-orange-500';
+    if (percentage >= 60) return 'bg-amber-500';
+    return 'bg-emerald-500';
+  };
+
+  const getBackgroundColor = () => {
+    if (percentage >= 95) return 'bg-rose-100';
+    if (percentage >= 80) return 'bg-orange-100';
+    if (percentage >= 60) return 'bg-amber-100';
+    return 'bg-emerald-100';
+  };
+
+  return (
+    <div className="w-full">
+      <div className={`w-full h-2 ${getBackgroundColor()} rounded-full overflow-hidden`}>
+        <div 
+          className={`h-full ${getColor()} transition-all duration-300`}
+          style={{ width: `${Math.min(percentage, 100)}%` }}
+        />
+      </div>
+      {showLabel && (
+        <p className="text-xs text-slate-500 mt-1">{percentage.toFixed(1)}%</p>
+      )}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
