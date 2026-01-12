@@ -1440,6 +1440,7 @@ const PaymentHistoryPage = () => {
 
 const Sidebar = () => {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -1452,33 +1453,63 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-blue-200 min-h-screen" data-testid="sidebar">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-blue-900">PMD PAGOS</h2>
-        <p className="text-sm text-blue-600 mt-1">Gestión de Pagos</p>
+    <>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-blue-200 px-4 py-3 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-blue-900">PMD PAGOS</h2>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-blue-50"
+          data-testid="mobile-menu-toggle"
+        >
+          {isMobileMenuOpen ? <XIcon className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </div>
-      <nav className="px-3">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center gap-3 px-3 py-3 mb-1 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700 font-medium'
-                  : 'text-slate-600 hover:bg-blue-50/50'
-              }`}
-              data-testid={`nav-${item.path}`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 bg-white border-r border-blue-200 
+        transform transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        pt-16 lg:pt-0
+      `} data-testid="sidebar">
+        <div className="p-6 hidden lg:block">
+          <h2 className="text-2xl font-bold text-blue-900">PMD PAGOS</h2>
+          <p className="text-sm text-blue-600 mt-1">Gestión de Pagos</p>
+        </div>
+        <nav className="px-3">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3 py-3 mb-1 rounded-lg transition-all ${
+                  isActive
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-slate-600 hover:bg-blue-50/50'
+                }`}
+                data-testid={`nav-${item.path}`}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </>
   );
 };
 
