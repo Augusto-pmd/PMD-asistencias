@@ -515,6 +515,112 @@ async def get_payment_history():
     return payments
 
 
+@api_router.get("/payments/by-project/{week_start}")
+async def get_payments_by_project(week_start: str):
+    employees = await db.employees.find({"is_active": True}, {"_id": 0}).to_list(1000)
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    attendance_records = await db.attendance.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
+    advances_records = await db.advances.find({"week_start_date": week_start}, {"_id": 0}).to_list(5000)
+    
+    project_payments = {}
+    
+    for project in projects:
+        project_employees = [e for e in employees if e.get('project_id') == project['id']]
+        
+        trade_totals = {}
+        project_total = 0
+        
+        for employee in project_employees:
+            employee_attendance = [a for a in attendance_records if a['employee_id'] == employee['id']]
+            days_worked = sum(1 for a in employee_attendance if a['status'] in ['present', 'late'])
+            
+            total_late_hours = sum(a.get('late_hours', 0) for a in employee_attendance if a['status'] == 'late')
+            hourly_rate = employee['daily_salary'] / 8
+            late_discount = total_late_hours * hourly_rate
+            
+            employee_advances = [a for a in advances_records if a['employee_id'] == employee['id']]
+            total_advances = sum(a['amount'] for a in employee_advances)
+            
+            gross_salary = days_worked * employee['daily_salary']
+            total_salary = gross_salary - late_discount
+            net_payment = total_salary - total_advances
+            
+            trade = employee.get('trade', 'Sin rubro')
+            if trade not in trade_totals:
+                trade_totals[trade] = {
+                    'employees': [],
+                    'total': 0
+                }
+            
+            trade_totals[trade]['employees'].append({
+                'name': employee['name'],
+                'days_worked': days_worked,
+                'gross_salary': gross_salary,
+                'late_discount': late_discount,
+                'total_salary': total_salary,
+                'advances': total_advances,
+                'net_payment': net_payment
+            })
+            trade_totals[trade]['total'] += net_payment
+            project_total += net_payment
+        
+        if project_employees:
+            project_payments[project['id']] = {
+                'project_id': project['id'],
+                'project_name': project['name'],
+                'trades': trade_totals,
+                'total': project_total
+            }
+    
+    unassigned_employees = [e for e in employees if not e.get('project_id')]
+    if unassigned_employees:
+        trade_totals = {}
+        unassigned_total = 0
+        
+        for employee in unassigned_employees:
+            employee_attendance = [a for a in attendance_records if a['employee_id'] == employee['id']]
+            days_worked = sum(1 for a in employee_attendance if a['status'] in ['present', 'late'])
+            
+            total_late_hours = sum(a.get('late_hours', 0) for a in employee_attendance if a['status'] == 'late')
+            hourly_rate = employee['daily_salary'] / 8
+            late_discount = total_late_hours * hourly_rate
+            
+            employee_advances = [a for a in advances_records if a['employee_id'] == employee['id']]
+            total_advances = sum(a['amount'] for a in employee_advances)
+            
+            gross_salary = days_worked * employee['daily_salary']
+            total_salary = gross_salary - late_discount
+            net_payment = total_salary - total_advances
+            
+            trade = employee.get('trade', 'Sin rubro')
+            if trade not in trade_totals:
+                trade_totals[trade] = {
+                    'employees': [],
+                    'total': 0
+                }
+            
+            trade_totals[trade]['employees'].append({
+                'name': employee['name'],
+                'days_worked': days_worked,
+                'gross_salary': gross_salary,
+                'late_discount': late_discount,
+                'total_salary': total_salary,
+                'advances': total_advances,
+                'net_payment': net_payment
+            })
+            trade_totals[trade]['total'] += net_payment
+            unassigned_total += net_payment
+        
+        project_payments['unassigned'] = {
+            'project_id': 'unassigned',
+            'project_name': 'Sin asignar',
+            'trades': trade_totals,
+            'total': unassigned_total
+        }
+    
+    return {"projects": list(project_payments.values())}
+
+
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats():
     today = datetime.now(timezone.utc)
