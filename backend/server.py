@@ -42,6 +42,27 @@ class EmployeeUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
+class Contractor(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str
+    name: str
+    weekly_payment: float
+    created_at: str
+    is_active: bool = True
+
+
+class ContractorCreate(BaseModel):
+    name: str
+    weekly_payment: float
+
+
+class ContractorUpdate(BaseModel):
+    name: Optional[str] = None
+    weekly_payment: Optional[float] = None
+    is_active: Optional[bool] = None
+
+
 class Attendance(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
