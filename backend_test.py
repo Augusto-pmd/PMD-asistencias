@@ -217,9 +217,9 @@ class PayrollProAPITester:
         return True
 
     def test_attendance_management(self):
-        """Test Attendance management"""
+        """Test Attendance management with late hours discount feature"""
         print("\n" + "="*50)
-        print("TESTING ATTENDANCE MANAGEMENT")
+        print("TESTING ATTENDANCE MANAGEMENT WITH LATE HOURS")
         print("="*50)
 
         if not self.employee_ids:
@@ -228,6 +228,7 @@ class PayrollProAPITester:
 
         employee_id = self.employee_ids[0]
         today = datetime.now().strftime("%Y-%m-%d")
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
         # Test Create Attendance - Present
         attendance_data = {
@@ -238,19 +239,80 @@ class PayrollProAPITester:
         }
         success, response = self.run_test("Mark Attendance Present", "POST", "attendance", 200, attendance_data)
 
-        # Test Update Attendance - Late
-        attendance_data["status"] = "late"
-        success, response = self.run_test("Update Attendance to Late", "POST", "attendance", 200, attendance_data)
+        # Test Create Attendance - Late with hours
+        late_attendance_data = {
+            "employee_id": employee_id,
+            "date": yesterday,
+            "status": "late",
+            "late_hours": 2.0,
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Mark Attendance Late with 2 hours", "POST", "attendance", 200, late_attendance_data)
+        if success:
+            if response.get('late_hours') == 2.0:
+                print("   ✅ Late hours recorded correctly")
+            else:
+                print(f"   ❌ Late hours incorrect: {response.get('late_hours')}")
+
+        # Test Update Attendance - Change late hours
+        late_attendance_data["late_hours"] = 1.5
+        success, response = self.run_test("Update Late Hours to 1.5", "POST", "attendance", 200, late_attendance_data)
+        if success:
+            if response.get('late_hours') == 1.5:
+                print("   ✅ Late hours updated correctly")
+            else:
+                print(f"   ❌ Late hours update failed: {response.get('late_hours')}")
+
+        # Test Edge Case - Late with 0 hours
+        zero_late_data = {
+            "employee_id": employee_id,
+            "date": (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d"),
+            "status": "late",
+            "late_hours": 0.0,
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Mark Late with 0 hours", "POST", "attendance", 200, zero_late_data)
+        if success:
+            if response.get('late_hours') == 0.0:
+                print("   ✅ Zero late hours handled correctly")
+            else:
+                print(f"   ❌ Zero late hours handling failed: {response.get('late_hours')}")
+
+        # Test Edge Case - Late with decimal hours
+        decimal_late_data = {
+            "employee_id": employee_id,
+            "date": (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d"),
+            "status": "late",
+            "late_hours": 0.5,
+            "week_start_date": self.current_week_start
+        }
+        success, response = self.run_test("Mark Late with 0.5 hours", "POST", "attendance", 200, decimal_late_data)
+        if success:
+            if response.get('late_hours') == 0.5:
+                print("   ✅ Decimal late hours handled correctly")
+            else:
+                print(f"   ❌ Decimal late hours handling failed: {response.get('late_hours')}")
 
         # Test Get All Attendance
         success, response = self.run_test("Get All Attendance", "GET", "attendance", 200)
         if success:
             print(f"   Found {len(response)} attendance records")
+            # Verify late_hours field is present
+            late_records = [r for r in response if r.get('status') == 'late']
+            for record in late_records:
+                if 'late_hours' in record:
+                    print(f"   ✅ Late record has late_hours: {record['late_hours']}")
+                else:
+                    print("   ❌ Late record missing late_hours field")
 
         # Test Get Week Attendance
         success, response = self.run_test("Get Week Attendance", "GET", f"attendance/week/{self.current_week_start}", 200)
         if success:
             print(f"   Found {len(response)} attendance records for current week")
+            # Verify late_hours field is present in week data
+            late_records = [r for r in response if r.get('status') == 'late']
+            total_late_hours = sum(r.get('late_hours', 0) for r in late_records)
+            print(f"   Total late hours for week: {total_late_hours}")
 
         return True
 
