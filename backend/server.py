@@ -185,6 +185,58 @@ async def delete_employee(employee_id: str):
     return {"message": "Employee deleted successfully"}
 
 
+@api_router.post("/contractors", response_model=Contractor)
+async def create_contractor(contractor: ContractorCreate):
+    from uuid import uuid4
+    contractor_dict = contractor.model_dump()
+    contractor_obj = Contractor(
+        id=str(uuid4()),
+        name=contractor_dict['name'],
+        weekly_payment=contractor_dict['weekly_payment'],
+        created_at=datetime.now(timezone.utc).isoformat(),
+        is_active=True
+    )
+    doc = contractor_obj.model_dump()
+    await db.contractors.insert_one(doc)
+    return contractor_obj
+
+
+@api_router.get("/contractors", response_model=List[Contractor])
+async def get_contractors():
+    contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
+    return contractors
+
+
+@api_router.get("/contractors/{contractor_id}", response_model=Contractor)
+async def get_contractor(contractor_id: str):
+    contractor = await db.contractors.find_one({"id": contractor_id}, {"_id": 0})
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    return contractor
+
+
+@api_router.put("/contractors/{contractor_id}", response_model=Contractor)
+async def update_contractor(contractor_id: str, update_data: ContractorUpdate):
+    contractor = await db.contractors.find_one({"id": contractor_id}, {"_id": 0})
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    if update_dict:
+        await db.contractors.update_one({"id": contractor_id}, {"$set": update_dict})
+    
+    updated_contractor = await db.contractors.find_one({"id": contractor_id}, {"_id": 0})
+    return updated_contractor
+
+
+@api_router.delete("/contractors/{contractor_id}")
+async def delete_contractor(contractor_id: str):
+    result = await db.contractors.delete_one({"id": contractor_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    return {"message": "Contractor deleted successfully"}
+
+
 @api_router.post("/attendance", response_model=Attendance)
 async def create_attendance(attendance: AttendanceCreate):
     from uuid import uuid4
