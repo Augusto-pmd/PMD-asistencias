@@ -836,7 +836,9 @@ const AttendanceSheet = () => {
                     <td className="py-3 px-6 text-sm text-slate-700 font-medium sticky left-0 bg-white">{employee.name}</td>
                     {weekDates.map((date) => {
                       const key = `${employee.id}-${date}`;
-                      const status = attendance[key] || '';
+                      const record = attendance[key] || {};
+                      const status = record.status || '';
+                      const hours = record.late_hours || 0;
                       return (
                         <td key={date} className="py-1 px-1">
                           <div
@@ -846,7 +848,12 @@ const AttendanceSheet = () => {
                           >
                             {status === 'present' && <Check className="w-5 h-5 mx-auto" />}
                             {status === 'absent' && <X className="w-5 h-5 mx-auto" />}
-                            {status === 'late' && <Clock className="w-5 h-5 mx-auto" />}
+                            {status === 'late' && (
+                              <div className="flex flex-col items-center">
+                                <Clock className="w-5 h-5" />
+                                {hours > 0 && <span className="text-xs mt-1">{hours}h</span>}
+                              </div>
+                            )}
                             {!status && <span className="text-slate-300">-</span>}
                           </div>
                         </td>
