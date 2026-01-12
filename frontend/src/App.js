@@ -1274,6 +1274,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/employees" element={<EmployeeManagement />} />
+              <Route path="/contractors" element={<ContractorManagement />} />
               <Route path="/attendance" element={<AttendanceSheet />} />
               <Route path="/advances" element={<AdvanceManagement />} />
               <Route path="/payments" element={<PaymentSummary />} />
