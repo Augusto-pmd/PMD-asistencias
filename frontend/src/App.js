@@ -375,8 +375,18 @@ const EmployeeManagement = () => {
 
   const openEditModal = (employee) => {
     setSelectedEmployee(employee);
-    setFormData({ name: employee.name, daily_salary: employee.daily_salary });
+    setFormData({ 
+      name: employee.name, 
+      daily_salary: employee.daily_salary,
+      project_id: employee.project_id || '',
+      trade: employee.trade || ''
+    });
     setIsEditModalOpen(true);
+  };
+
+  const getProjectName = (projectId) => {
+    const project = projects.find(p => p.id === projectId);
+    return project ? project.name : 'Sin asignar';
   };
 
   if (loading) {
