@@ -68,77 +68,77 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6" data-testid="dashboard">
+    <div className="space-y-4 sm:space-y-6" data-testid="dashboard">
       <div>
-        <h1 className="text-4xl font-bold text-slate-900 mb-2">Dashboard</h1>
-        <p className="text-slate-500">Resumen de la semana actual</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">Dashboard</h1>
+        <p className="text-sm sm:text-base text-slate-500">Resumen de la semana actual</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="p-6 stat-card bg-white border border-blue-200 rounded-xl shadow-sm" data-testid="stat-card-employees">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <Card className="p-4 sm:p-6 stat-card bg-white border border-blue-200 rounded-xl shadow-sm" data-testid="stat-card-employees">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Empleados Activos</p>
-              <p className="text-3xl font-bold text-slate-900">{stats?.active_employees || 0}</p>
+              <p className="text-xs sm:text-sm font-medium text-slate-500 mb-1">Empleados Activos</p>
+              <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stats?.active_employees || 0}</p>
               <p className="text-xs text-slate-400 mt-1">de {stats?.total_employees || 0} totales</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 stat-card bg-white border border-blue-200 rounded-xl shadow-sm" data-testid="stat-card-contractors">
+        <Card className="p-4 sm:p-6 stat-card bg-white border border-blue-200 rounded-xl shadow-sm" data-testid="stat-card-contractors">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Contratistas Activos</p>
-              <p className="text-3xl font-bold text-slate-900">{stats?.active_contractors || 0}</p>
+              <p className="text-xs sm:text-sm font-medium text-slate-500 mb-1">Contratistas Activos</p>
+              <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stats?.active_contractors || 0}</p>
               <p className="text-xs text-slate-400 mt-1">de {stats?.total_contractors || 0} totales</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Briefcase className="w-6 h-6 text-blue-700" />
+            <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
+              <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-blue-700" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 stat-card bg-white border border-blue-200 rounded-xl shadow-sm" data-testid="stat-card-advances">
+        <Card className="p-4 sm:p-6 stat-card bg-white border border-blue-200 rounded-xl shadow-sm sm:col-span-2 lg:col-span-1" data-testid="stat-card-advances">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Adelantos</p>
-              <p className="text-3xl font-bold text-slate-900 font-mono-numbers">
+              <p className="text-xs sm:text-sm font-medium text-slate-500 mb-1">Adelantos</p>
+              <p className="text-2xl sm:text-3xl font-bold text-slate-900 font-mono-numbers">
                 {formatCurrency(stats?.total_advances_this_week || 0)}
               </p>
               <p className="text-xs text-slate-400 mt-1">descontados</p>
             </div>
-            <div className="p-3 bg-rose-50 rounded-lg">
-              <DollarSign className="w-6 h-6 text-rose-600" />
+            <div className="p-2 sm:p-3 bg-rose-50 rounded-lg">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-rose-600" />
             </div>
           </div>
         </Card>
       </div>
 
-      <Card className="p-6 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl shadow-sm">
+      <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl shadow-sm">
         <div className="text-center">
-          <p className="text-sm font-medium text-blue-700 mb-2">Total a Pagar el Viernes</p>
-          <p className="text-5xl font-bold text-blue-900 font-mono-numbers mb-4">
+          <p className="text-xs sm:text-sm font-medium text-blue-700 mb-2">Total a Pagar el Viernes</p>
+          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 font-mono-numbers mb-4">
             {formatCurrency(stats?.total_to_pay_friday || 0)}
           </p>
-          <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
-            <div className="bg-white/70 rounded-lg p-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4 text-xs sm:text-sm">
+            <div className="bg-white/70 rounded-lg p-2 sm:p-3">
               <p className="text-blue-600 mb-1">Empleados</p>
-              <p className="font-bold text-slate-900 font-mono-numbers">
+              <p className="font-bold text-slate-900 font-mono-numbers text-xs sm:text-sm">
                 {formatCurrency(stats?.total_payment_this_week || 0)}
               </p>
             </div>
-            <div className="bg-white/70 rounded-lg p-3">
+            <div className="bg-white/70 rounded-lg p-2 sm:p-3">
               <p className="text-blue-600 mb-1">Contratistas</p>
-              <p className="font-bold text-slate-900 font-mono-numbers">
+              <p className="font-bold text-slate-900 font-mono-numbers text-xs sm:text-sm">
                 {formatCurrency(stats?.contractors_payment_this_week || 0)}
               </p>
             </div>
-            <div className="bg-white/70 rounded-lg p-3">
+            <div className="bg-white/70 rounded-lg p-2 sm:p-3">
               <p className="text-blue-600 mb-1">Adelantos</p>
-              <p className="font-bold text-rose-600 font-mono-numbers">
+              <p className="font-bold text-rose-600 font-mono-numbers text-xs sm:text-sm">
                 -{formatCurrency(stats?.total_advances_this_week || 0)}
               </p>
             </div>
@@ -146,9 +146,9 @@ const Dashboard = () => {
         </div>
       </Card>
 
-      <Card className="p-6 bg-white border border-blue-200 rounded-xl shadow-sm">
-        <h2 className="text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Card className="p-4 sm:p-6 bg-white border border-blue-200 rounded-xl shadow-sm">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Link to="/employees">
             <Button className="w-full btn-primary" data-testid="quick-action-employees">
               <Users className="w-4 h-4 mr-2" />
