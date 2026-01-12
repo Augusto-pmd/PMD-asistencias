@@ -192,6 +192,54 @@ const Dashboard = () => {
         </div>
       </Card>
 
+      {contractorsNearBudget.length > 0 && (
+        <Card className="p-4 sm:p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-amber-100 rounded-lg">
+              <svg className="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base sm:text-lg font-bold text-amber-900 mb-2">
+                ⚠️ Alertas de Presupuesto ({contractorsNearBudget.length})
+              </h3>
+              <p className="text-sm text-amber-700 mb-3">
+                Los siguientes contratistas han consumido más del 80% de su presupuesto:
+              </p>
+              <div className="space-y-3">
+                {contractorsNearBudget.map(contractor => {
+                  const percentage = (contractor.total_paid / contractor.budget) * 100;
+                  const weeksRemaining = contractor.remaining_balance > 0 
+                    ? Math.floor(contractor.remaining_balance / contractor.weekly_payment)
+                    : 0;
+                  
+                  return (
+                    <div key={contractor.id} className="bg-white/80 rounded-lg p-3 border border-amber-200">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <div>
+                          <p className="font-semibold text-slate-900">{contractor.name}</p>
+                          <p className="text-xs text-slate-600">{contractor.project_name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-amber-700">
+                            {weeksRemaining > 0 ? `~${weeksRemaining} semanas restantes` : 'Presupuesto agotado'}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {formatCurrency(contractor.remaining_balance)} disponible
+                          </p>
+                        </div>
+                      </div>
+                      <ProgressBar percentage={percentage} showLabel={true} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="p-4 sm:p-6 bg-white border border-blue-200 rounded-xl shadow-sm">
         <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
