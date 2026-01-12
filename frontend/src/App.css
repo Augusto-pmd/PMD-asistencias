@@ -1,6 +1,6 @@
 .App {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #eff6ff;
 }
 
 .stat-card {
@@ -8,7 +8,7 @@
 }
 
 .stat-card:hover {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.1), 0 4px 6px -4px rgb(37 99 235 / 0.1);
 }
 
 .status-badge {
@@ -21,9 +21,9 @@
 }
 
 .status-present {
-  background-color: #d1fae5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
 .status-absent {
@@ -39,7 +39,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -48,18 +48,19 @@
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  box-shadow: 0 1px 3px 0 rgb(37 99 235 / 0.2);
 }
 
 .btn-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(37 99 235 / 0.2);
 }
 
 .btn-secondary {
   background-color: white;
   color: #475569;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #bfdbfe;
   border-radius: 0.5rem;
   padding: 0.625rem 1.5rem;
   font-weight: 500;
@@ -69,7 +70,8 @@
 }
 
 .btn-secondary:hover {
-  background-color: #f8fafc;
+  background-color: #eff6ff;
+  border-color: #93c5fd;
 }
 
 .attendance-cell {
@@ -81,12 +83,12 @@
 }
 
 .attendance-cell:hover {
-  background-color: #f1f5f9;
+  background-color: #dbeafe;
 }
 
 .attendance-cell.selected-present {
-  background-color: #d1fae5;
-  color: #047857;
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
 .attendance-cell.selected-absent {
@@ -101,8 +103,8 @@
 
 .glassmorphism {
   backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  background: rgba(239, 246, 255, 0.9);
+  border-bottom: 1px solid rgba(191, 219, 254, 0.6);
 }
 
 .card-hover {
@@ -110,6 +112,6 @@
 }
 
 .card-hover:hover {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.1), 0 4px 6px -4px rgb(37 99 235 / 0.1);
   transform: translateY(-2px);
 }
