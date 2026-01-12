@@ -274,9 +274,24 @@ class PayrollProAPITester:
         if success:
             print(f"   Total employees: {response.get('total_employees', 'N/A')}")
             print(f"   Active employees: {response.get('active_employees', 'N/A')}")
+            print(f"   Total contractors: {response.get('total_contractors', 'N/A')}")
+            print(f"   Active contractors: {response.get('active_contractors', 'N/A')}")
             print(f"   Total payment this week: {response.get('total_payment_this_week', 'N/A')}")
+            print(f"   Contractors payment this week: {response.get('contractors_payment_this_week', 'N/A')}")
             print(f"   Total advances this week: {response.get('total_advances_this_week', 'N/A')}")
             print(f"   Net payment this week: {response.get('net_payment_this_week', 'N/A')}")
+            print(f"   Total to pay Friday: {response.get('total_to_pay_friday', 'N/A')}")
+            
+            # Verify contractor stats are included
+            if 'total_contractors' in response and 'active_contractors' in response:
+                print("   ✅ Contractor stats included in dashboard")
+            else:
+                print("   ❌ Contractor stats missing from dashboard")
+                
+            if 'contractors_payment_this_week' in response:
+                print("   ✅ Contractor payment calculation included")
+            else:
+                print("   ❌ Contractor payment calculation missing")
 
         return True
 
