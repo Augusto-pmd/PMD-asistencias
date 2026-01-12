@@ -1225,6 +1225,7 @@ const Sidebar = () => {
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/employees', icon: Users, label: 'Empleados' },
+    { path: '/contractors', icon: Briefcase, label: 'Contratistas' },
     { path: '/attendance', icon: Calendar, label: 'Asistencia' },
     { path: '/advances', icon: DollarSign, label: 'Adelantos' },
     { path: '/payments', icon: DollarSign, label: 'Resumen de Pagos' },
