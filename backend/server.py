@@ -253,7 +253,13 @@ async def update_contractor(contractor_id: str, update_data: ContractorUpdate):
         await db.contractors.update_one({"id": contractor_id}, {"$set": update_dict})
     
     updated_contractor = await db.contractors.find_one({"id": contractor_id}, {"_id": 0})
-    updated_contractor['remaining_balance'] = updated_contractor['budget'] - updated_contractor.get('total_paid', 0)
+    budget = updated_contractor.get('budget', 0)
+    total_paid = updated_contractor.get('total_paid', 0)
+    updated_contractor['budget'] = budget
+    updated_contractor['total_paid'] = total_paid
+    updated_contractor['remaining_balance'] = budget - total_paid
+    if 'project_name' not in updated_contractor:
+        updated_contractor['project_name'] = 'Sin asignar'
     return updated_contractor
 
 
