@@ -1420,7 +1420,7 @@ const PaymentSummary = () => {
                     </td>
                     <td className="py-4 px-6 text-right">
                       {payment.type === 'contractor' ? (
-                        <div className="text-right">
+                        <div className="text-right space-y-2">
                           <div className={`text-sm font-bold font-mono-numbers ${
                             payment.afterPaymentBalance < 0 ? 'text-rose-600' : 
                             payment.afterPaymentBalance < payment.budget * 0.2 ? 'text-amber-600' : 
@@ -1430,6 +1430,12 @@ const PaymentSummary = () => {
                           </div>
                           <div className="text-xs text-slate-400">
                             de {formatCurrency(payment.budget)}
+                          </div>
+                          <div className="min-w-[100px]">
+                            <ProgressBar 
+                              percentage={payment.budget > 0 ? ((payment.totalPaid + payment.netPayment) / payment.budget) * 100 : 0} 
+                              showLabel={false} 
+                            />
                           </div>
                         </div>
                       ) : (
