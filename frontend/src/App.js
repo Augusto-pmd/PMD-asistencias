@@ -1264,7 +1264,8 @@ const PaymentSummary = () => {
                 <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Persona</th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tipo</th>
                 <th className="text-center py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Días/Semana</th>
-                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Base</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Salario Base</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Desc. Tardanzas</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Adelantos</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Neto</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Saldo Obra</th>
@@ -1273,7 +1274,7 @@ const PaymentSummary = () => {
             <tbody>
               {paymentData.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-12 text-slate-400">
+                  <td colSpan="8" className="text-center py-12 text-slate-400">
                     No hay datos para mostrar
                   </td>
                 </tr>
@@ -1295,7 +1296,21 @@ const PaymentSummary = () => {
                     </td>
                     <td className="py-4 px-6 text-sm text-slate-700 text-center">{payment.daysWorked}</td>
                     <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
-                      {formatCurrency(payment.totalSalary)}
+                      {formatCurrency(payment.type === 'employee' ? payment.grossSalary : payment.totalSalary)}
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      {payment.type === 'employee' && payment.lateDiscount > 0 ? (
+                        <div>
+                          <div className="text-sm text-amber-600 font-mono-numbers">
+                            -{formatCurrency(payment.lateDiscount)}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            ({payment.lateHours}h)
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-slate-400">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-sm text-rose-600 text-right font-mono-numbers">
                       -{formatCurrency(payment.totalAdvances)}
