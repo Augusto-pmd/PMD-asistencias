@@ -590,8 +590,12 @@ const ContractorManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isAddCertModalOpen, setIsAddCertModalOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState(null);
+  const [certifications, setCertifications] = useState([]);
   const [formData, setFormData] = useState({ name: '', weekly_payment: '', project_name: '', budget: '' });
+  const [certFormData, setCertFormData] = useState({ amount: '', week_start_date: '', description: '' });
 
   useEffect(() => {
     fetchContractors();
@@ -606,6 +610,16 @@ const ContractorManagement = () => {
       console.error('Error fetching contractors:', error);
       toast.error('Error al cargar contratistas');
       setLoading(false);
+    }
+  };
+
+  const fetchCertifications = async (contractorId) => {
+    try {
+      const response = await axios.get(`${API}/certifications/contractor/${contractorId}`);
+      setCertifications(response.data);
+    } catch (error) {
+      console.error('Error fetching certifications:', error);
+      toast.error('Error al cargar certificaciones');
     }
   };
 
