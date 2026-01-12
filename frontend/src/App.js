@@ -982,6 +982,7 @@ const AdvanceManagement = () => {
 
 const PaymentSummary = () => {
   const [employees, setEmployees] = useState([]);
+  const [contractors, setContractors] = useState([]);
   const [weekStart, setWeekStart] = useState(getCurrentWeekStart());
   const [attendance, setAttendance] = useState([]);
   const [advances, setAdvances] = useState([]);
@@ -994,16 +995,18 @@ const PaymentSummary = () => {
 
   const fetchData = async () => {
     try {
-      const [empRes, attRes, advRes] = await Promise.all([
+      const [empRes, contrRes, attRes, advRes] = await Promise.all([
         axios.get(`${API}/employees`),
+        axios.get(`${API}/contractors`),
         axios.get(`${API}/attendance/week/${weekStart}`),
         axios.get(`${API}/advances`)
       ]);
       
       setEmployees(empRes.data.filter(e => e.is_active));
+      setContractors(contrRes.data.filter(c => c.is_active));
       setAttendance(attRes.data);
       setAdvances(advRes.data);
-      calculatePayments(empRes.data.filter(e => e.is_active), attRes.data, advRes.data);
+      calculatePayments(empRes.data.filter(e => e.is_active), contrRes.data.filter(c => c.is_active), attRes.data, advRes.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -1012,8 +1015,11 @@ const PaymentSummary = () => {
     }
   };
 
-  const calculatePayments = (emps, att, adv) => {
-    const payments = emps.map(employee => {
+  const calculatePayments = (emps, contrs, att, adv) => {
+    const payments = [];
+    
+    // Calcular pagos de empleados
+    emps.forEach(employee => {
       const employeeAttendance = att.filter(a => a.employee_id === employee.id);
       const daysWorked = employeeAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
       
@@ -1023,13 +1029,26 @@ const PaymentSummary = () => {
       const totalSalary = daysWorked * employee.daily_salary;
       const netPayment = totalSalary - totalAdvances;
       
-      return {
-        employee,
+      payments.push({
+        type: 'employee',
+        person: employee,
         daysWorked,
         totalSalary,
         totalAdvances,
         netPayment
-      };
+      });
+    });
+    
+    // Agregar contratistas
+    contrs.forEach(contractor => {
+      payments.push({
+        type: 'contractor',
+        person: contractor,
+        daysWorked: 'Semanal',
+        totalSalary: contractor.weekly_payment,
+        totalAdvances: 0,
+        netPayment: contractor.weekly_payment
+      });
     });
     
     setPaymentData(payments);
@@ -1075,7 +1094,7 @@ const PaymentSummary = () => {
 
       <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl shadow-sm">
         <div className="text-center">
-          <p className="text-sm font-medium text-slate-600 mb-2">Total a Pagar Esta Semana</p>
+          <p className="text-sm font-medium text-slate-600 mb-2">Total a Disponer el Viernes</p>
           <p className="text-5xl font-bold text-slate-900 font-mono-numbers">{formatCurrency(totalToPay)}</p>
         </div>
       </Card>
@@ -1085,10 +1104,10 @@ const PaymentSummary = () => {
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Empleado</th>
-                <th className="text-center py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Días Trabajados</th>
-                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Salario Diario</th>
-                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Salario</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Persona</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tipo</th>
+                <th className="text-center py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Días/Semana</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Base</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Adelantos</th>
                 <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago Neto</th>
               </tr>
@@ -1101,13 +1120,15 @@ const PaymentSummary = () => {
                   </td>
                 </tr>
               ) : (
-                paymentData.map((payment) => (
-                  <tr key={payment.employee.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`payment-row-${payment.employee.id}`}>
-                    <td className="py-4 px-6 text-sm text-slate-700 font-medium">{payment.employee.name}</td>
-                    <td className="py-4 px-6 text-sm text-slate-700 text-center">{payment.daysWorked}</td>
-                    <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
-                      {formatCurrency(payment.employee.daily_salary)}
+                paymentData.map((payment, idx) => (
+                  <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors" data-testid={`payment-row-${payment.person.id}`}>
+                    <td className="py-4 px-6 text-sm text-slate-700 font-medium">{payment.person.name}</td>
+                    <td className="py-4 px-6">
+                      <Badge variant={payment.type === 'employee' ? 'default' : 'secondary'}>
+                        {payment.type === 'employee' ? 'Empleado' : 'Contratista'}
+                      </Badge>
                     </td>
+                    <td className="py-4 px-6 text-sm text-slate-700 text-center">{payment.daysWorked}</td>
                     <td className="py-4 px-6 text-sm text-slate-700 text-right font-mono-numbers">
                       {formatCurrency(payment.totalSalary)}
                     </td>
