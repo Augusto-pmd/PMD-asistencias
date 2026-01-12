@@ -214,7 +214,7 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
 
         .receipt-border {
           width: 100%;
-          padding: 12px;
+          padding: 10px;
           border: 2px solid #1e40af;
           border-radius: 4px;
           background: white;
@@ -225,39 +225,39 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 8px;
-          padding-bottom: 8px;
+          margin-bottom: 6px;
+          padding-bottom: 6px;
           border-bottom: 2px solid #1e40af;
         }
 
         .company-name {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: bold;
           color: #1e40af;
           letter-spacing: 1px;
         }
 
         .receipt-number {
-          font-size: 12px;
+          font-size: 11px;
           font-weight: bold;
           color: #475569;
         }
 
         .receipt-date {
           text-align: right;
-          font-size: 11px;
-          margin-bottom: 8px;
+          font-size: 10px;
+          margin-bottom: 6px;
           color: #475569;
         }
 
         .receipt-body {
-          margin: 12px 0;
+          margin: 10px 0;
         }
 
         .receipt-line {
           display: flex;
-          margin-bottom: 6px;
-          font-size: 11px;
+          margin-bottom: 4px;
+          font-size: 10px;
           align-items: baseline;
         }
 
@@ -268,20 +268,22 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
         .receipt-line .label {
           font-weight: 600;
           color: #334155;
-          min-width: 100px;
-          margin-right: 8px;
+          min-width: 90px;
+          margin-right: 6px;
+          font-size: 9px;
         }
 
         .receipt-line .value {
           flex: 1;
           color: #1e293b;
+          font-size: 9px;
         }
 
         .receipt-line .underline {
           border-bottom: 1px solid #cbd5e1;
           padding-bottom: 2px;
           display: inline-block;
-          min-height: 16px;
+          min-height: 14px;
         }
 
         .receipt-line .uppercase {
@@ -289,8 +291,8 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
         }
 
         .receipt-breakdown {
-          margin: 12px 0;
-          padding: 8px;
+          margin: 10px 0;
+          padding: 6px;
           background: #f8fafc;
           border: 1px solid #cbd5e1;
           border-radius: 4px;
@@ -298,25 +300,25 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
 
         .breakdown-title {
           font-weight: bold;
-          font-size: 10px;
+          font-size: 9px;
           color: #1e40af;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
           text-transform: uppercase;
         }
 
         .breakdown-subtitle {
           font-weight: 600;
-          font-size: 9px;
+          font-size: 8px;
           color: #475569;
-          margin-top: 6px;
-          margin-bottom: 3px;
+          margin-top: 4px;
+          margin-bottom: 2px;
         }
 
         .breakdown-item {
           display: flex;
           justify-content: space-between;
-          font-size: 9px;
-          margin-bottom: 3px;
+          font-size: 8px;
+          margin-bottom: 2px;
           color: #1e293b;
         }
 
@@ -327,10 +329,10 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
         .breakdown-total {
           display: flex;
           justify-content: space-between;
-          font-size: 10px;
+          font-size: 9px;
           font-weight: bold;
-          margin-top: 6px;
-          padding-top: 6px;
+          margin-top: 4px;
+          padding-top: 4px;
           border-top: 2px solid #1e40af;
           color: #1e40af;
         }
@@ -338,8 +340,8 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
         .receipt-footer {
           display: flex;
           justify-content: space-between;
-          margin-top: 16px;
-          margin-bottom: 8px;
+          margin-top: 10px;
+          margin-bottom: 6px;
         }
 
         .signature-section {
@@ -349,29 +351,29 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
 
         .signature-line {
           margin-bottom: 2px;
-          font-size: 10px;
+          font-size: 9px;
           color: #1e293b;
         }
 
         .employee-name {
           font-weight: bold;
           margin-bottom: 2px;
-          font-size: 11px;
+          font-size: 10px;
           color: #1e293b;
         }
 
         .signature-label {
-          font-size: 9px;
+          font-size: 8px;
           color: #64748b;
           font-style: italic;
         }
 
         .receipt-note {
           text-align: center;
-          font-size: 9px;
+          font-size: 8px;
           color: #64748b;
           font-style: italic;
-          margin-top: 8px;
+          margin-top: 6px;
         }
 
         /* Screen preview styles */
@@ -393,6 +395,10 @@ const PrintableReceipts = ({ receipts, weekStart }) => {
           amount={receipt.amount}
           weekStart={formatDate(weekStart)}
           weekEnd={formatDate(weekEnd)}
+          grossSalary={receipt.grossSalary}
+          lateDiscount={receipt.lateDiscount}
+          advances={receipt.advances}
+          netPayment={receipt.netPayment}
         />
       ))}
     </div>
